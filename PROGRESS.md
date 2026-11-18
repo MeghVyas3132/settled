@@ -26,7 +26,7 @@ Plan: ../bch-blaze-2026/BUILD-PLAN.md. Freeze 22 Nov 12:00 IST. Submit by 22 Nov
 - [x] Monitor: per-block classifier (Blockchair raw blocks) + mempool sample + active dsproofs
 - [x] Web (Vite): check page, demo checkout (QR path + WizardConnect path with coin guard and signed-tx verification), merchant dashboard, monitor, how-it-works, BLAZE banner. Built; screenshot research/shot-tx.png
 - [x] docs/FINDINGS.md, README.md, LICENSE
-- [ ] Real-tx fixtures in tests (record raw hex)
+- [x] Real-tx fixtures: 2 recorded mainnet chains (received P2PKH, pending contract chain); scripts/record-fixture.mjs; 17 tests pass. Font: IBM Plex
 - [ ] NEEDS MEGH: merchant + CashTokens donation address; a few thousand sats in a WizardConnect wallet (Cashonize/Paytaca) for the first mainnet payments; deploy target (settled.aexiz.in + OCI?); OK to create a public GitHub repo
 - [ ] Dev deploy
 

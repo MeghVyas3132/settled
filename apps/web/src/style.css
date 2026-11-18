@@ -2,7 +2,7 @@
   --bg: #f7f6f2; --fg: #16181d; --muted: #6b6f78; --card: #ffffff; --line: #e3e1da;
   --pending: #b45309; --pending-bg: #fff4e0; --ok: #0f7a4a; --ok-bg: #e5f6ee; --conf: #1d4ed8; --conf-bg: #e6edff;
   --accent: #0ac18e; --err: #b91c1c;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root { --bg: #111317; --fg: #eceef2; --muted: #9aa0aa; --card: #1a1d22; --line: #2a2e35;
@@ -12,7 +12,7 @@
 body { margin: 0; background: var(--bg); color: var(--fg); line-height: 1.5; }
 #app { max-width: 980px; margin: 0 auto; padding: 0 16px 64px; }
 a { color: inherit; }
-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.86em; word-break: break-all; }
+code { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.86em; word-break: break-all; }
 .banner { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 14px; margin: 0 -16px;
   background: var(--fg); color: var(--bg); font-size: 13px; }
 .banner a { color: var(--accent); font-weight: 600; }

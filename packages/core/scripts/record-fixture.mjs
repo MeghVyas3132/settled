@@ -1,0 +1,12 @@
+import { FulcrumPool, analyzeTransaction, TxCache } from '../dist/index.js';
+import { binToHex, encodeTransactionBCH } from '@bitauth/libauth';
+import { writeFileSync } from 'node:fs';
+const [txid, name] = process.argv.slice(2);
+const pool = new FulcrumPool(); await pool.connect();
+const cache = new TxCache();
+const r = await analyzeTransaction(pool, txid, { crossCheck: false }, cache);
+const txs = {}; for (const [id, tx] of cache.raw) txs[id] = binToHex(encodeTransactionBCH(tx));
+const heights = Object.fromEntries(cache.heights);
+writeFileSync(`test/fixtures/${name}.json`, JSON.stringify({ txid, expected: { state: r.state, score: r.score, codes: [...new Set(r.reasons.map(x => x.code))].sort() }, txs, heights }, null, 1));
+console.log(name, r.state, r.score, Object.keys(txs).length, 'txs');
+await pool.close();
