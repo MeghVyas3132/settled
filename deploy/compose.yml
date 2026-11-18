@@ -1,0 +1,13 @@
+# Separate project on the shared OCI box. Caps keep it from affecting other services.
+name: settled
+services:
+  api:
+    image: settled-api:latest
+    build: ..
+    restart: unless-stopped
+    ports: ["127.0.0.1:8787:8787"]
+    environment:
+      MONITOR_BACKFILL: "24"
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 384M }
