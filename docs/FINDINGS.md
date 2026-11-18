@@ -39,3 +39,9 @@ Settled walks the full unconfirmed ancestry and checks proofs on every ancestor.
 Cauldron arbitrage bots race each other for unbalanced pools. This causes mempool de-synchronisation and broken chains of unconfirmed swaps ([t/2258](https://bitcoincashresearch.org/t/2258), Nov 2026).
 
 On 19 Nov, 4 of 5 public Fulcrum 2.1.4 servers answered `blockchain.transaction.dsproof.*`, so the data needed to warn merchants is available today.
+
+## 6. Paytaca POS shows payments as received instantly, including Tap to Pay
+
+- Paytaca POS (`src/composables/usePaymentTracking.js`, commit d674768, 15 Oct 2026) adds a payment as soon as the Watchtower websocket reports it. There is no double-spend proof check.
+- Its NFC **Tap to Pay** card payments spend a CashScript contract (`src/card/contract/taptopay.js`, `TapToPayContract`). Under BCHN's rules no double-spend proof can protect them before they are mined.
+- Prepared patch, not submitted yet: [`integrations/paytaca-pos.patch`](../integrations/paytaca-pos.patch). It shows a settlement badge (Received (safe) / Pending: wait for confirmation / Confirmed) with the reason on each received payment.

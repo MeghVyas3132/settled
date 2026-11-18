@@ -1,0 +1,120 @@
+From 63c496c4f29aaabd0e786339adad6350ac48eff1 Mon Sep 17 00:00:00 2001
+From: Megh Vyas <noreply@local>
+Date: Thu, 19 Nov 2026 04:45:46 +0530
+Subject: [PATCH] Show zero-conf settlement status for received payments
+ (CHIP-2025-11)
+
+---
+ src/composables/usePaymentTracking.js |  2 ++
+ src/composables/useSettlement.js      | 44 +++++++++++++++++++++++++++
+ src/pages/ReceivePage.vue             | 11 +++++++
+ 3 files changed, 57 insertions(+)
+ create mode 100644 src/composables/useSettlement.js
+
+diff --git a/src/composables/usePaymentTracking.js b/src/composables/usePaymentTracking.js
+index 3dc91b2..dcbf59f 100644
+--- a/src/composables/usePaymentTracking.js
++++ b/src/composables/usePaymentTracking.js
+@@ -1,4 +1,5 @@
+ import { ref, computed, watch, onMounted, onUnmounted, markRaw } from 'vue'
++import { trackSettlement } from 'src/composables/useSettlement'
+ import { useWalletStore } from 'stores/wallet'
+ import { usePaymentsStore } from 'stores/payments'
+ import { useAddressesStore } from 'stores/addresses'
+@@ -190,6 +191,7 @@ export function usePaymentTracking({
+     if (!updateTransactionList(transaction)) return
+ 
+     const txid = transaction?.txid
++    trackSettlement(txid)
+ 
+     if (isCashtoken.value) {
+       if (transaction?.tokenId === `ct/${tokenCategory.value}`) {
+diff --git a/src/composables/useSettlement.js b/src/composables/useSettlement.js
+new file mode 100644
+index 0000000..c5818e2
+--- /dev/null
++++ b/src/composables/useSettlement.js
+@@ -0,0 +1,44 @@
++import { reactive } from 'vue'
++
++/**
++ * Zero-confirmation settlement status for received payments (CHIP-2025-11).
++ *
++ * A payment is only safe to accept before it is mined when the network can raise a
++ * double-spend proof for it: every input of the payment and of its unconfirmed history
++ * must spend a P2PKH output signed SIGHASH_ALL (same rule as BCHN getdsproofscore).
++ * Payments funded by contracts (e.g. a fresh swap, Tap to Pay) or signed SIGHASH_UTXOS
++ * (WizardConnect) can still be reversed, so they are shown as "Pending" until mined.
++ *
++ * Uses the Settled API (https://github.com/…/settled). Set SETTLED_API to self-host.
++ */
++const API = process.env.SETTLED_API || 'https://settled-api.aexiz.in'
++const states = reactive({})
++
++async function check (txid) {
++  try {
++    const res = await fetch(`${API}/v1/tx/${txid}`)
++    if (!res.ok) throw new Error(res.statusText)
++    const report = await res.json()
++    states[txid] = { state: report.state, reasons: [...new Set(report.reasons.map(r => r.message))] }
++    return states[txid]
++  } catch (error) {
++    states[txid] = { state: 'unknown', reasons: [] }
++    return states[txid]
++  }
++}
++
++/** Polls until the payment is safe, confirmed, or 30 minutes pass. */
++export function trackSettlement (txid) {
++  if (!txid || states[txid]) return
++  states[txid] = { state: 'checking', reasons: [] }
++  const until = Date.now() + 30 * 60 * 1000
++  const tick = async () => {
++    const s = await check(txid)
++    if (s.state === 'pending' && Date.now() < until) setTimeout(tick, 5000)
++  }
++  tick()
++}
++
++export function settlementOf (txid) {
++  return states[txid]
++}
+diff --git a/src/pages/ReceivePage.vue b/src/pages/ReceivePage.vue
+index 4d85b14..c5f130e 100644
+--- a/src/pages/ReceivePage.vue
++++ b/src/pages/ReceivePage.vue
+@@ -165,6 +165,15 @@
+             <q-item-label class="ellipsis">
+               {{ txReceived?.txid }}
+             </q-item-label>
++            <q-item-label caption>
++              <q-badge
++                :color="({ received: 'positive', confirmed: 'primary', settled: 'primary', pending: 'warning' })[settlementOf(txReceived?.txid)?.state] || 'grey'"
++                :label="({ received: 'Received (safe)', confirmed: 'Confirmed', settled: 'Settled', pending: 'Pending: wait for confirmation', checking: 'Checking…' })[settlementOf(txReceived?.txid)?.state] || 'Unknown'"
++              />
++              <span v-if="settlementOf(txReceived?.txid)?.state === 'pending'" class="q-ml-xs text-caption">
++                {{ settlementOf(txReceived?.txid)?.reasons?.[0] }}
++              </span>
++            </q-item-label>
+           </q-item-section>
+           <q-item-section class="text-right">
+             <q-item-label caption>
+@@ -188,6 +197,7 @@
+   </q-page>
+ </template>
+ <script>
++import { settlementOf } from 'src/composables/useSettlement'
+ import { getNetworkTimeDiff } from 'src/utils/time.js'
+ import { useWalletStore } from 'stores/wallet'
+ import { usePaymentsStore } from 'stores/payments'
+@@ -1668,6 +1678,7 @@ export default defineComponent({
+     })
+ 
+     return {
++      settlementOf,
+       walletStore,
+       isOnline,
+       promptOnLeave,
+-- 
+2.50.1 (Apple Git-155)
+

@@ -31,6 +31,8 @@ Plan: ../bch-blaze-2026/BUILD-PLAN.md. Freeze 22 Nov 12:00 IST. Submit by 22 Nov
 - [x] Deploy files prepared (Dockerfile, deploy/compose.yml with caps, deploy/settled-api.caddy). Not deployed: waiting for Megh's OK
 - [x] docs/SLIDES.md: Widget Factory 7-slide draft text (Megh to edit)
 - [x] settled-core npm-ready (exports, bin, README, 7 kB tarball; name check below). Publish needs Megh OK
+- [x] Paytaca POS patch prepared locally (integrations/paytaca-pos.patch: useSettlement composable, badge on received list). Untested in the Quasar app; submitting the PR needs Megh OK
+- [x] Finding: Paytaca Tap to Pay = contract spends, never DSProof-protectable (docs/FINDINGS.md §6)
 - [ ] Dev deploy (after Megh OK)
 
 ## Day 2 (20 Nov): checkout guard, API, mainnet payments
