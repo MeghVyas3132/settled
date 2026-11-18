@@ -1,0 +1,6 @@
+blocks 977895 .. 977930 non-coinbase txs 4494
+inputs by sighash: {'0x41': 15601, 'other-script': 4260, 'non-push/contract': 959, '0x61': 577, '0xc1': 45}
+  has non-P2PKH input: 2298 (51.1%)
+  P2PKH ALL (DSProof-coverable): 2041 (45.4%)
+  P2PKH-only but SIGHASH_UTXOS: 141 (3.1%)
+  P2PKH weak sighash: 14 (0.3%)

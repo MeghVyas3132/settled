@@ -1,0 +1,26 @@
+{
+  "name": "settled-core",
+  "version": "0.1.0",
+  "description": "Zero-confirmation settlement checks for Bitcoin Cash payments (CHIP-2025-11 reference implementation)",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@bitauth/libauth": "3.0.0",
+    "@electrum-cash/network": "4.4.8"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}
