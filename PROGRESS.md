@@ -22,8 +22,13 @@ Plan: ../bch-blaze-2026/BUILD-PLAN.md. Freeze 22 Nov 12:00 IST. Submit by 22 Nov
 - [x] CLI `node packages/core/dist/cli.js <txid>`, verified on live mempool txs (Cauldron-style contract chains → PENDING, plain P2PKH → RECEIVED)
 - [x] 15 unit tests (classifier, and analyzer with a mock chain)
 - [ ] Admin by Megh: DoraHacks register, Telegram check-in, roll-call ask
-- [ ] Real-tx fixtures (record raw hex of a live contract chain, a UTXOS-signed tx, a P2PKH tx)
-- [ ] API skeleton (Hono) + web skeleton (Vite) + dev deploy
+- [x] API (Hono): /v1/tx, /v1/tx/:id/stream (SSE), /v1/address, /v1/coins, /v1/broadcast, /v1/watch (webhooks), /v1/monitor. Tested live.
+- [x] Monitor: per-block classifier (Blockchair raw blocks) + mempool sample + active dsproofs
+- [x] Web (Vite): check page, demo checkout (QR path + WizardConnect path with coin guard and signed-tx verification), merchant dashboard, monitor, how-it-works, BLAZE banner. Built; screenshot research/shot-tx.png
+- [x] docs/FINDINGS.md, README.md, LICENSE
+- [ ] Real-tx fixtures in tests (record raw hex)
+- [ ] NEEDS MEGH: merchant + CashTokens donation address; a few thousand sats in a WizardConnect wallet (Cashonize/Paytaca) for the first mainnet payments; deploy target (settled.aexiz.in + OCI?); OK to create a public GitHub repo
+- [ ] Dev deploy
 
 ## Day 2 (20 Nov): checkout guard, API, mainnet payments
 ## Day 3 (21 Nov): merchant dashboard, monitor, PRs, npm, stream 19:30 IST
