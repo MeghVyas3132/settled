@@ -28,7 +28,9 @@ Plan: ../bch-blaze-2026/BUILD-PLAN.md. Freeze 22 Nov 12:00 IST. Submit by 22 Nov
 - [x] docs/FINDINGS.md, README.md, LICENSE
 - [x] Real-tx fixtures: 2 recorded mainnet chains (received P2PKH, pending contract chain); scripts/record-fixture.mjs; 17 tests pass. Font: IBM Plex
 - [ ] NEEDS MEGH: merchant + CashTokens donation address; a few thousand sats in a WizardConnect wallet (Cashonize/Paytaca) for the first mainnet payments; deploy target (settled.aexiz.in + OCI?); OK to create a public GitHub repo
-- [ ] Dev deploy
+- [x] Deploy files prepared (Dockerfile, deploy/compose.yml with caps, deploy/settled-api.caddy). Not deployed: waiting for Megh's OK
+- [x] docs/SLIDES.md: Widget Factory 7-slide draft text (Megh to edit)
+- [ ] Dev deploy (after Megh OK)
 
 ## Day 2 (20 Nov): checkout guard, API, mainnet payments
 ## Day 3 (21 Nov): merchant dashboard, monitor, PRs, npm, stream 19:30 IST
