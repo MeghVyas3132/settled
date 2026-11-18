@@ -1,0 +1,63 @@
+import type { Report, State } from './api';
+import { BANNER, EXPLORER } from './config';
+
+export const h = (html: string): HTMLElement => {
+  const t = document.createElement('template');
+  t.innerHTML = html.trim();
+  return t.content.firstElementChild as HTMLElement;
+};
+export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+export const short = (s: string, n = 10) => `${s.slice(0, n)}…${s.slice(-6)}`;
+
+export const STATE_COPY: Record<State, { label: string; hint: string }> = {
+  pending: { label: 'Pending', hint: 'Do not hand over goods yet. These funds can still be reversed. Wait for one confirmation.' },
+  received: { label: 'Received', hint: 'Safe to hand over goods. Protected by double-spend proofs until it is mined.' },
+  confirmed: { label: 'Confirmed', hint: 'Included in a block.' },
+  settled: { label: 'Settled', hint: '10+ confirmations.' },
+  unknown: { label: 'Not found', hint: 'The network does not know this transaction.' },
+};
+
+export function banner(): HTMLElement {
+  const donation = BANNER.donation
+    ? `<span class="don">Donate / vote (CashTokens): <code>${esc(BANNER.donation)}</code></span>` : '';
+  return h(`<div class="banner">
+    <strong>BCH BLAZE 2026 entry</strong>
+    <a href="${BANNER.slides}" target="_blank" rel="noopener">Presentation</a>
+    <a href="${BANNER.repo}" target="_blank" rel="noopener">Source code</a>
+    ${donation}
+    <span class="muted">Built from scratch during BLAZE (14–22 Nov 2026)</span>
+  </div>`);
+}
+
+export function nav(active: string): HTMLElement {
+  const items = [['#/', 'Check a payment'], ['#/pay', 'Demo checkout'], ['#/merchant', 'Merchant'], ['#/monitor', 'Network monitor'], ['#/about', 'How it works']];
+  return h(`<nav>${items.map(([href, label]) => `<a href="${href}" class="${href === active ? 'on' : ''}">${label}</a>`).join('')}</nav>`);
+}
+
+export function statePill(s: State): string {
+  return `<span class="pill ${s}">${STATE_COPY[s].label}</span>`;
+}
+
+/** Full report card: state, plain-language reasons, ancestor tree, server views. */
+export function reportCard(r: Report): HTMLElement {
+  const copy = STATE_COPY[r.state];
+  const uniq = new Map<string, typeof r.reasons[number]>();
+  for (const x of r.reasons) uniq.set(`${x.code}|${x.txid}`, x);
+  const reasons = [...uniq.values()];
+  const reasonHtml = reasons.length
+    ? `<ul class="reasons">${reasons.map((x) => `<li><b>${esc(x.code)}</b> in <a href="${EXPLORER}${x.txid}" target="_blank" rel="noopener"><code>${short(x.txid)}</code></a>${x.vin !== undefined ? ` input ${x.vin}` : ''}: ${esc(x.message)}</li>`).join('')}</ul>`
+    : r.state === 'received' ? '<p class="ok">Every input in this payment and its unconfirmed history can be protected by double-spend proofs, and all servers agree.</p>' : '';
+  const tree = r.ancestors.length
+    ? `<details><summary>Unconfirmed history checked (${r.ancestors.length} transaction${r.ancestors.length > 1 ? 's' : ''})</summary><ol class="tree">${r.ancestors
+        .map((a) => `<li style="margin-left:${a.depth * 16}px"><code>${short(a.txid)}</code> ${a.inputs.map((i) => `<span class="in ${i.covered ? 'cov' : 'unc'}" title="${i.code ?? 'covered'}">in${i.vin}${i.covered ? ' ✓' : ' ✕ ' + (i.code ?? '')}</span>`).join(' ')}</li>`)
+        .join('')}</ol></details>` : '';
+  const servers = r.servers.length
+    ? `<p class="muted small">Checked against ${r.servers.length} independent servers: ${r.servers.map((s) => `${esc(s.host)} ${s.sawTx ? '✓' : '✕'}${s.dsproof ? ' (double-spend proof!)' : ''}`).join(' · ')}</p>` : '';
+  return h(`<section class="card report ${r.state}">
+    <div class="head">${statePill(r.state)} <span class="score">protection score ${r.score}</span> ${r.confirmations ? `<span>${r.confirmations} confirmation${r.confirmations > 1 ? 's' : ''}</span>` : ''}</div>
+    <p class="hint">${copy.hint}</p>
+    <p class="small">Transaction <a href="${EXPLORER}${r.txid}" target="_blank" rel="noopener"><code>${esc(r.txid)}</code></a></p>
+    ${reasonHtml}${tree}${servers}
+    <p class="muted small">Checked ${new Date(r.checkedAt).toLocaleTimeString()}</p>
+  </section>`);
+}
