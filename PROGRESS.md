@@ -30,6 +30,7 @@ Plan: ../bch-blaze-2026/BUILD-PLAN.md. Freeze 22 Nov 12:00 IST. Submit by 22 Nov
 - [ ] NEEDS MEGH: merchant + CashTokens donation address; a few thousand sats in a WizardConnect wallet (Cashonize/Paytaca) for the first mainnet payments; deploy target (settled.aexiz.in + OCI?); OK to create a public GitHub repo
 - [x] Deploy files prepared (Dockerfile, deploy/compose.yml with caps, deploy/settled-api.caddy). Not deployed: waiting for Megh's OK
 - [x] docs/SLIDES.md: Widget Factory 7-slide draft text (Megh to edit)
+- [x] settled-core npm-ready (exports, bin, README, 7 kB tarball; name check below). Publish needs Megh OK
 - [ ] Dev deploy (after Megh OK)
 
 ## Day 2 (20 Nov): checkout guard, API, mainnet payments

@@ -22,5 +22,26 @@
     "tsx": "4.20.6",
     "typescript": "5.9.3",
     "vitest": "3.2.4"
+  },
+  "bin": {
+    "settled": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "keywords": [
+    "bitcoin-cash",
+    "bch",
+    "zero-conf",
+    "dsproof",
+    "double-spend",
+    "chip-2025-11",
+    "payments"
+  ],
+  "engines": {
+    "node": ">=20"
   }
 }
