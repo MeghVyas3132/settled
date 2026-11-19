@@ -43,5 +43,14 @@
   ],
   "engines": {
     "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MeghVyas3132/settled.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/MeghVyas3132/settled#readme",
+  "bugs": {
+    "url": "https://github.com/MeghVyas3132/settled/issues"
   }
 }

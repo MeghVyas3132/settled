@@ -46,7 +46,7 @@ index 0000000..c5818e2
 + * Payments funded by contracts (e.g. a fresh swap, Tap to Pay) or signed SIGHASH_UTXOS
 + * (WizardConnect) can still be reversed, so they are shown as "Pending" until mined.
 + *
-+ * Uses the Settled API (https://github.com/…/settled). Set SETTLED_API to self-host.
++ * Uses the Settled API (https://github.com/MeghVyas3132/settled). Set SETTLED_API to self-host.
 + */
 +const API = process.env.SETTLED_API || 'https://settled-api.aexiz.in'
 +const states = reactive({})
