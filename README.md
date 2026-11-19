@@ -11,7 +11,7 @@ BCH payments are meant to be instant ("zero-conf"). That only holds when the net
 Settled checks a payment and its whole unconfirmed history using the same rules Bitcoin Cash Node uses, and tells the merchant **Pending**, **Received** (safe), **Confirmed** or **Settled**, with the reason. It is the first implementation of [CHIP-2025-11](https://bitcoincashresearch.org/t/chip-2025-11-unsettled-inputs-break-zero-confirmation-transactions/1704).
 
 > BCH BLAZE 2026, Mainnet Track. Built from scratch during the hackathon (14–22 Nov 2026).
-> Presentation: _link_ · Live app: _link_ · CashTokens address: _address_
+> Presentation: _link_ · Live app: _link_ · CashTokens address (donations / EMBER2026 votes): `bitcoincash:zqp03escsg96978qz8fla6y2pf0teknf3qj95lsm3f`
 
 ## What's in the box
 

@@ -27,7 +27,9 @@ Plan: ../bch-blaze-2026/BUILD-PLAN.md. Freeze 22 Nov 12:00 IST. Submit by 22 Nov
 - [x] Web (Vite): check page, demo checkout (QR path + WizardConnect path with coin guard and signed-tx verification), merchant dashboard, monitor, how-it-works, BLAZE banner. Built; screenshot research/shot-tx.png
 - [x] docs/FINDINGS.md, README.md, LICENSE
 - [x] Real-tx fixtures: 2 recorded mainnet chains (received P2PKH, pending contract chain); scripts/record-fixture.mjs; 17 tests pass. Font: IBM Plex
-- [ ] NEEDS MEGH: merchant + CashTokens donation address; a few thousand sats in a WizardConnect wallet (Cashonize/Paytaca) for the first mainnet payments; deploy target (settled.aexiz.in + OCI?); OK to create a public GitHub repo
+- [x] Merchant address bitcoincash:qqp03escsg96978qz8fla6y2pf0teknf3q408p7aw6; banner CashTokens (token-aware) bitcoincash:zqp03escsg96978qz8fla6y2pf0teknf3qj95lsm3f (apps/web/.env)
+- [x] Public repo github.com/MeghVyas3132/settled
+- [ ] NEEDS MEGH: a few thousand sats in a WizardConnect wallet (Cashonize/Paytaca) for the first mainnet payments; deploy target (settled.aexiz.in + OCI?); OK to create a public GitHub repo
 - [x] Deploy files prepared (Dockerfile, deploy/compose.yml with caps, deploy/settled-api.caddy). Not deployed: waiting for Megh's OK
 - [x] docs/SLIDES.md: Widget Factory 7-slide draft text (Megh to edit)
 - [x] settled-core npm-ready (exports, bin, README, 7 kB tarball; name check below). Publish needs Megh OK
