@@ -29,6 +29,8 @@ Plan: ../bch-blaze-2026/BUILD-PLAN.md. Freeze 22 Nov 12:00 IST. Submit by 22 Nov
 - [x] Real-tx fixtures: 2 recorded mainnet chains (received P2PKH, pending contract chain); scripts/record-fixture.mjs; 17 tests pass. Font: IBM Plex
 - [x] Merchant address bitcoincash:qqp03escsg96978qz8fla6y2pf0teknf3q408p7aw6; banner CashTokens (token-aware) bitcoincash:zqp03escsg96978qz8fla6y2pf0teknf3qj95lsm3f (apps/web/.env)
 - [x] Public repo github.com/MeghVyas3132/settled
+- [x] settled-core@0.1.0 published on npm (19 Nov)
+- [x] Telegram: joined BCH BLAZE Chat, posted the 'we're real' check-in 19 Nov 11:21 IST (DoraHacks user meghvyas03). Roll call: pinned admin msg says closed, so we stay in the low-priority queue; did not ask (Jeremy is short with repeat questions). Tester ask waits for a deploy link.
 - [ ] NEEDS MEGH: a few thousand sats in a WizardConnect wallet (Cashonize/Paytaca) for the first mainnet payments; deploy target (settled.aexiz.in + OCI?); OK to create a public GitHub repo
 - [x] Deploy files prepared (Dockerfile, deploy/compose.yml with caps, deploy/settled-api.caddy). Not deployed: waiting for Megh's OK
 - [x] docs/SLIDES.md: Widget Factory 7-slide draft text (Megh to edit)
