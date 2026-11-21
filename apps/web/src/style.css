@@ -67,4 +67,4 @@ table.coins { width: 100%; border-collapse: collapse; font-size: 14px; }
 .coins td, .coins th { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
 .prose { max-width: 760px; }
 details summary { cursor: pointer; margin: 10px 0; }
-.before { border-left: 3px solid var(--line); padding-left: 12px; margin: 8px 0 12px; }
+.before { background: var(--bg); border-radius: 10px; padding: 10px 12px; margin: 8px 0 12px; }
