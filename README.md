@@ -24,6 +24,17 @@ Settled checks a payment and its whole unconfirmed history using the same rules 
 | **Settlement API** | `GET /v1/tx/:txid`, `GET /v1/tx/:txid/stream` (SSE), `GET /v1/address/:address`, `GET /v1/coins?addresses=`, `POST /v1/watch` (webhooks), `GET /v1/monitor`. |
 | **`settled-core`** | The engine as a TypeScript library, for wallets and POS. |
 
+## Proof on mainnet (21 Nov 2026)
+
+The same wallet (Cashonize) paid the same 1,000 sats to the demo merchant two ways:
+
+| How it was paid | Transaction | Signature | What Settled showed before it was mined |
+|---|---|---|---|
+| Through the Settled checkout over **WizardConnect** | [`0a9d04cc…dedd93`](https://explorer.salemkode.com/tx/0a9d04cc4fda5aabb8cfd6ccdc1adf64d8dbaa0b78d8cd8ee842c8ff65dedd93) | `ALL\|FORKID\|UTXOS` | **Pending**, score 0: no double-spend proof is possible |
+| Cashonize's normal **Send** | [`7c3f6432…32f769`](https://explorer.salemkode.com/tx/7c3f6432a8e059b7fb874c6e617914cd1da8bfa2da475022194142319832f769) | `ALL\|FORKID` | **Received**, score 1: safe to hand over goods |
+
+Both are recorded as test fixtures in `packages/core/test/fixtures/`.
+
 ## How it decides
 
 For an unconfirmed transaction, Settled walks every unconfirmed ancestor and classifies every input the way BCHN's `checkIsProofPossibleForAllInputsOfTx` and `getdsproofscore` do:
@@ -66,7 +77,7 @@ if (r.state === 'received') handOverGoods();
 
 | Done | Not done yet |
 |---|---|
-| Engine, CLI, 15 unit tests, API, web app (check, checkout, merchant, monitor) | Hosted deploy, mainnet demo txids, PRs to Paytaca POS and Cashonize, npm publish |
+| Engine, CLI, 19 tests (4 recorded mainnet fixtures), API, web app (check, checkout, merchant, monitor), mainnet proof payments, `settled-core` on npm | Hosted deploy, PR to Paytaca POS |
 
 ## Limits and threat model
 

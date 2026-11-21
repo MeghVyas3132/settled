@@ -33,7 +33,7 @@ Plan: ../bch-blaze-2026/BUILD-PLAN.md. Freeze 22 Nov 12:00 IST. Submit by 22 Nov
 - [x] Telegram: joined BCH BLAZE Chat, posted the 'we're real' check-in 19 Nov 11:21 IST (DoraHacks user meghvyas03). Roll call: pinned admin msg says closed, so we stay in the low-priority queue; did not ask (Jeremy is short with repeat questions). Tester ask waits for a deploy link.
 - [x] Funded via hashi.cash (0.8 USDC → 434,681 sats, 21 Nov)
 - [x] Mainnet WizardConnect payment 0a9d04cc…dedd93 → Pending score 0 (sighash-utxos), as predicted. Fixture recorded, 18 tests
-- [ ] Mainnet normal-send payment (expect Received) after 0a9d04 confirms
+- [x] Mainnet normal-send payment 7c3f6432…32f769 → Received score 1 (Cashonize signs ALL|FORKID for normal sends). Fixture recorded
 - [ ] NEEDS MEGH: a few thousand sats in a WizardConnect wallet (Cashonize/Paytaca) for the first mainnet payments; deploy target (settled.aexiz.in + OCI?); OK to create a public GitHub repo
 - [x] Deploy files prepared (Dockerfile, deploy/compose.yml with caps, deploy/settled-api.caddy). Not deployed: waiting for Megh's OK
 - [x] docs/SLIDES.md: Widget Factory 7-slide draft text (Megh to edit)
