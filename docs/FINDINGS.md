@@ -22,6 +22,10 @@ Script: [`research/sighash_scan.py`](../research/sighash_scan.py). The live vers
 - `src/dsproof/dsproof_validate.cpp`, `checkIsProofPossibleForAllInputsOfTx`: the signature getter throws, `hasFork()` is false, the function returns `false`, and so `getdsproofscore` is `0.0`.
 - Consequence: every payment made through WizardConnect, the connection standard BLAZE requires, is not zero-conf safe. Nothing in any wallet or POS tells the merchant.
 
+**Live proof (21 Nov 2026):** we paid 1,000 sats through our own WizardConnect checkout from Cashonize. The transaction is [`0a9d04cc4fda5aabb8cfd6ccdc1adf64d8dbaa0b78d8cd8ee842c8ff65dedd93`](https://explorer.salemkode.com/tx/0a9d04cc4fda5aabb8cfd6ccdc1adf64d8dbaa0b78d8cd8ee842c8ff65dedd93). Cashonize signed it `ALL|FORKID|UTXOS`, and Settled showed **Pending, score 0** on all 4 servers. It is a recorded fixture: `packages/core/test/fixtures/pending-wizardconnect-utxos.json`.
+
+**UX note:** the WizardConnect relay disconnects while the dapp's tab, or the wallet's tab, is hidden. With both open in one browser window, the sign request is delivered only when the wallet tab is brought to the front. Use separate windows, or a phone wallet.
+
 ## 3. Descendants are not notified
 
 From BCHN's DSProof implementation notes: "If a transaction that is double spent is in the mempool … and has descendants in the mempool, a DSProof is currently only issued for the double spent transaction itself. There is no notification or query mechanism yet to inform that the descendants have now been put at risk." A merchant paid by a child of a double-spent transaction hears nothing.
