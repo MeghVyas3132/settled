@@ -7,3 +7,4 @@ research/blk.json
 .env.local
 .env
 !apps/web/.env
+!apps/web/.env.production
