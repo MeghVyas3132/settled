@@ -10,8 +10,21 @@ BCH payments are meant to be instant ("zero-conf"). That only holds when the net
 
 Settled checks a payment and its whole unconfirmed history using the same rules Bitcoin Cash Node uses, and tells the merchant **Pending**, **Received** (safe), **Confirmed** or **Settled**, with the reason. It is the first implementation of [CHIP-2025-11](https://bitcoincashresearch.org/t/chip-2025-11-unsettled-inputs-break-zero-confirmation-transactions/1704).
 
-> BCH BLAZE 2026, Mainnet Track. Built from scratch during the hackathon (14–22 Nov 2026).
-> Presentation: _link_ · Live app: _link_ · CashTokens address (donations / EMBER2026 votes): `bitcoincash:zqp03escsg96978qz8fla6y2pf0teknf3qj95lsm3f`
+> BCH BLAZE 2026, Mainnet Track. Built from scratch during the hackathon (14–22 Nov 2026). No pre-existing code.
+
+| | |
+|---|---|
+| **Live app** | https://settled.aexiz.in |
+| **Settlement API** | https://settled-api.aexiz.in (try `/v1/monitor`) |
+| **Library** | [`settled-core` on npm](https://www.npmjs.com/package/settled-core) |
+| **Presentation** | _Widget Factory slides: link added before submission_ |
+| **CashTokens address** (donations / EMBER2026 votes) | `bitcoincash:zqp03escsg96978qz8fla6y2pf0teknf3qj95lsm3f` |
+| **Team** | Megh Vyas ([@MeghVyas3132](https://github.com/MeghVyas3132)): engine, API, research · Anton ([@Antxnrx](https://github.com/Antxnrx)): frontend, UI/UX |
+
+**Try it in 30 seconds:**
+1. Open https://settled.aexiz.in and paste any BCH txid. Or open our proof payments (below): each shows what a merchant would have seen before it was mined.
+2. Go to **Demo checkout** and pay 1,000 sats (about $0.002) from Cashonize or Paytaca. Pay once by scanning the QR, once with **Connect wallet**, and compare the two merchant screens. Keep the dapp tab visible while your wallet signs.
+3. Open **Network monitor**: how much of BCH mainnet traffic is zero-conf safe right now.
 
 ## What's in the box
 
@@ -73,11 +86,16 @@ const r = await analyzeTransaction(pool, txid);
 if (r.state === 'received') handOverGoods();
 ```
 
-## Status
+## Status (honest)
 
 | Done | Not done yet |
 |---|---|
-| Engine, CLI, 19 tests (4 recorded mainnet fixtures), API, web app (check, checkout, merchant, monitor), mainnet proof payments, `settled-core` on npm | Hosted deploy, PR to Paytaca POS |
+| Engine that mirrors BCHN `getdsproofscore`, with ancestor walk, DSProof check and multi-server cross-check | Selene wallet tested on a real device (only Cashonize tested end to end) |
+| 19 tests, incl. 4 recorded mainnet fixtures | PR to Paytaca POS submitted (patch ready in `integrations/`) |
+| Live API (OCI) and web app (Vercel) | Webhook delivery tested against a real merchant backend |
+| Mainnet proof: WizardConnect payment → Pending, normal send → Received | Long-run monitor history (currently last 24 blocks + live mempool sample) |
+| `settled-core` 0.1.0 on npm, CLI, merchant dashboard, network monitor | Hardware-wallet and Electron Cash flows |
+| Confirmed payments still show what the merchant would have seen before mining | |
 
 ## Limits and threat model
 

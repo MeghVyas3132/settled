@@ -6,6 +6,7 @@ export interface Report {
   txid: string; state: State; score: number; confirmations: number; reasons: Reason[];
   ancestors: { txid: string; depth: number; inputs: { vin: number; prevTxid: string; covered: boolean; code?: string; sighash?: number }[] }[];
   servers: { host: string; sawTx: boolean; dsproof: boolean }[]; checkedAt: string;
+  beforeMining?: { state: 'pending' | 'received'; score: number; reasons: Reason[] };
 }
 export interface Coin { address: string; txid: string; vout: number; value: number; height: number; hasToken: boolean; safe: boolean; fundingState: State; reasons: string[] }
 

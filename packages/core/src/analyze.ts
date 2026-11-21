@@ -61,6 +61,22 @@ async function getHeight(src: ChainSource, cache: TxCache, txid: string): Promis
   }
 }
 
+/** Classifies a transaction's own inputs only (used to explain confirmed payments after the fact). */
+async function classifyOwnInputs(src: ChainSource, cache: TxCache, txid: string): Promise<SettlementReport['beforeMining']> {
+  const tx = await getTx(src, cache, txid);
+  const reasons: Reason[] = [];
+  for (let vin = 0; vin < tx.inputs.length; vin++) {
+    const input = tx.inputs[vin]!;
+    const prev = await getTx(src, cache, binToHex(input.outpointTransactionHash));
+    const prevOut = prev.outputs[input.outpointIndex];
+    if (!prevOut) continue;
+    const cov = classifyInput(prevOut.lockingBytecode, input.unlockingBytecode);
+    if (!cov.covered) reasons.push(reason(cov.code, txid, cov.score, vin, cov.sighash !== undefined ? describeSighash(cov.sighash) : undefined));
+  }
+  const score: 0 | 0.25 | 1 = reasons.some((r) => r.score === 0) ? 0 : reasons.length ? 0.25 : 1;
+  return { state: score === 1 ? 'received' : 'pending', score, reasons };
+}
+
 /**
  * Checks whether a BCH payment can be trusted before it is mined (CHIP-2025-11).
  * Walks the transaction and every unconfirmed ancestor, classifies each input the same
@@ -91,7 +107,8 @@ export async function analyzeTransaction(
     const tip = await src.request<{ height: number }>('blockchain.headers.get_tip').catch(() => undefined);
     const confirmations = tip ? tip.height - height + 1 : 1;
     const state: SettlementState = confirmations >= 10 ? 'settled' : 'confirmed';
-    return { txid, state, score: 1, confirmations, reasons, ancestors, servers, checkedAt };
+    const beforeMining = await classifyOwnInputs(src, cache, txid).catch(() => undefined);
+    return { txid, state, score: 1, confirmations, reasons, ancestors, servers, checkedAt, beforeMining };
   }
 
   // Breadth-first walk over unconfirmed ancestry.

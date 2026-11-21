@@ -53,9 +53,14 @@ export function reportCard(r: Report): HTMLElement {
         .join('')}</ol></details>` : '';
   const servers = r.servers.length
     ? `<p class="muted small">Checked against ${r.servers.length} independent servers: ${r.servers.map((s) => `${esc(s.host)} ${s.sawTx ? '✓' : '✕'}${s.dsproof ? ' (double-spend proof!)' : ''}`).join(' · ')}</p>` : '';
+  const bm = r.beforeMining;
+  const before = bm
+    ? `<div class="before"><p class="small"><b>Before it was mined</b> a merchant would have seen ${statePill(bm.state)} (score ${bm.score}).</p>${bm.reasons.length
+        ? `<ul class="reasons">${[...new Map(bm.reasons.map((x) => [x.code, x])).values()].map((x) => `<li><b>${esc(x.code)}</b>: ${esc(x.message)}</li>`).join('')}</ul>`
+        : '<p class="small ok">Every input was protectable by double-spend proofs (judged from its own inputs).</p>'}</div>` : '';
   return h(`<section class="card report ${r.state}">
-    <div class="head">${statePill(r.state)} <span class="score">protection score ${r.score}</span> ${r.confirmations ? `<span>${r.confirmations} confirmation${r.confirmations > 1 ? 's' : ''}</span>` : ''}</div>
-    <p class="hint">${copy.hint}</p>
+    <div class="head">${statePill(r.state)} ${r.confirmations ? '' : `<span class="score">protection score ${r.score}</span>`} ${r.confirmations ? `<span>${r.confirmations} confirmation${r.confirmations > 1 ? 's' : ''}</span>` : ''}</div>
+    <p class="hint">${copy.hint}</p>${before}
     <p class="small">Transaction <a href="${EXPLORER}${r.txid}" target="_blank" rel="noopener"><code>${esc(r.txid)}</code></a></p>
     ${reasonHtml}${tree}${servers}
     <p class="muted small">Checked ${new Date(r.checkedAt).toLocaleTimeString()}</p>

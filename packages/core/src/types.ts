@@ -55,6 +55,11 @@ export interface SettlementReport {
   ancestors: AncestorNode[];
   servers: ServerView[];
   checkedAt: string;
+  /**
+   * For confirmed transactions: what a merchant would have seen before it was mined,
+   * judged from the transaction's own inputs (its unconfirmed ancestry at the time is not known).
+   */
+  beforeMining?: { state: 'pending' | 'received'; score: 0 | 0.25 | 1; reasons: Reason[] };
 }
 
 /** Minimal Electrum-protocol interface the analyser needs. */

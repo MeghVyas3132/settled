@@ -45,3 +45,13 @@ Plan: ../bch-blaze-2026/BUILD-PLAN.md. Freeze 22 Nov 12:00 IST. Submit by 22 Nov
 ## Day 2 (20 Nov): checkout guard, API, mainnet payments
 ## Day 3 (21 Nov): merchant dashboard, monitor, PRs, npm, stream 19:30 IST
 ## Day 4 (22 Nov): banner, slides, README, freeze 12:00, submit
+
+## 21 Nov
+- [x] Deployed: API on OCI (settled-api.aexiz.in, capped container on the edge network), web on Vercel (settled.aexiz.in, verified)
+- [x] Phone checks at 390 px: no overflow or errors on all pages; merchant + monitor work on live data
+- [x] Fix: confirmed payments show `beforeMining` (what the merchant would have seen), so the proof links keep the finding
+- [x] docs/UI-POLISH.md handed to Anton (team: Megh + Anton; Anton owns frontend/UI)
+- [x] README: live links, team, try-it steps, honest status
+- [ ] Selene check (no device)
+- [ ] Slides link (Megh/Anton) → banner VITE_SLIDES + README
+- [ ] Telegram tester post, Paytaca PR, DoraHacks submission text, frozen build
