@@ -1,13 +1,27 @@
-# Separate project on the shared OCI box. Caps keep it from affecting other services.
+# Settled API on the shared OCI box. Lives in /srv/settled (next to /srv/edge and /srv/snapsettle).
+#  - no published ports: reached only through the existing Caddy on the shared `edge` network
+#  - capped at 0.5 CPU and 384 MB, no swap: if it misbehaves only it is stopped
 name: settled
 services:
   api:
     image: settled-api:latest
-    build: ..
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: settled-api-1
     restart: unless-stopped
-    ports: ["127.0.0.1:8787:8787"]
     environment:
+      PORT: "8787"
       MONITOR_BACKFILL: "24"
-    deploy:
-      resources:
-        limits: { cpus: "0.5", memory: 384M }
+    cpus: 0.5
+    mem_limit: 384m
+    memswap_limit: 384m
+    networks: [default, edge]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8787/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+networks:
+  edge:
+    external: true

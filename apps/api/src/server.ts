@@ -56,6 +56,8 @@ app.get('/v1/tx/:txid/stream', (c) => {
       } catch (e) {
         await s.writeSSE({ event: 'error', data: (e as Error).message });
       }
+      // Keep-alive so proxies (Cloudflare cuts idle streams at 100 s) do not drop the stream.
+      await s.writeSSE({ event: 'ping', data: '' });
       await s.sleep(3000);
     }
   });

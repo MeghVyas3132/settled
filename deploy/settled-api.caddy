@@ -1,6 +1,17 @@
-# Load only after DNS for settled-api.aexiz.in resolves. Touch no other Caddy site files.
+# Settled API on settled-api.aexiz.in (mainnet, read-only chain checks + broadcast of user-signed txs).
+# Load only after DNS resolves (A settled-api -> origin, proxied through Cloudflare).
 settled-api.aexiz.in {
-	reverse_proxy 127.0.0.1:8787 {
+	encode gzip
+	header {
+		-Server
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+	}
+	request_body {
+		max_size 256KB
+	}
+	# flush_interval -1: stream Server-Sent Events immediately
+	reverse_proxy settled-api-1:8787 {
 		flush_interval -1
 	}
 }
