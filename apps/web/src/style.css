@@ -6,20 +6,20 @@
 
 :root {
   --paper: #ffffff;
-  --paper-2: #f7f8fc;
+  --paper-2: #f1f1f8;
   --surface: #ffffff;
-  --ink: #202438;
+  --ink: #0e0e14;
   --ink-2: #2b3050;
   --muted: #686b80;
   --faint: #a3a7b8;
-  --line: #e8eaf2;
+  --line: #dcdce8;
   --line-2: #d7dbe7;
 
   /* Floor palette */
   --brand-blue: #739bff; --brand-violet: #9b87f5; --brand-pink: #e5a1d8; --brand-silver: #d7dbe7;
-  --blue: #6b52d6;        /* Floor signal-ink (violet), AA on white */
-  --blue-ink: #553fc0;
-  --blue-bg: #efeafe;
+  --blue: #1f4fd8;        /* Floor signal-ink (violet), AA on white */
+  --blue-ink: #1740b8;
+  --blue-bg: #e7ecfb;
   --green: #4f7ae0;
 
   --received: #1f9d63; --received-bg: #e8f5ee; --received-ln: #cde7d8;
@@ -27,7 +27,7 @@
   --confirmed: #4f7ae0; --confirmed-bg: #eaf0fd; --confirmed-ln: #cfddf8;
   --danger: #cc3b32;
 
-  --sans: "Geist", "Geist Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sans: "Lato", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --ease: cubic-bezier(0.22, 0.7, 0.16, 1);
   --radius: 6px;
@@ -139,12 +139,12 @@ button[disabled] { opacity: 0.5; cursor: wait; }
 @media (max-width: 620px) { .pillbar > a[data-scroll]:not(.pill-brand) { display: none; } }
 
 .hero-floor { position: relative; height: 100svh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-.hero-grad { position: absolute; inset: 0; z-index: 0; background: linear-gradient(125deg, #d7dbe7 0%, #739bff 32%, #9b87f5 62%, #e5a1d8 100%); }
+.hero-grad { position: absolute; inset: 0; z-index: 0; background: radial-gradient(120% 120% at 50% 120%, #0a1230 0%, #010204 60%); }
 .hero-floor::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.07; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E"); }
 .wordmark { position: relative; z-index: 2; font-weight: 600; font-size: clamp(96px, 27vw, 420px); letter-spacing: -0.045em; color: #fff; line-height: 1; user-select: none; }
 .marquee { position: absolute; bottom: 0; left: 0; right: 0; z-index: 2; overflow: hidden; padding: 13px 0; border-top: 1px solid rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); }
 .mq-track { display: inline-flex; white-space: nowrap; will-change: transform; animation: mq 30s linear infinite; }
-.mq-track span { display: inline-flex; align-items: center; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; color: rgba(32, 36, 56, 0.72); padding-left: 30px; }
+.mq-track span { display: inline-flex; align-items: center; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; color: rgba(248, 248, 255, 0.72); padding-left: 30px; }
 .mq-track .star { color: var(--blue); margin-left: 30px; font-style: normal; }
 @keyframes mq { to { transform: translateX(-50%); } }
 
@@ -195,7 +195,7 @@ button[disabled] { opacity: 0.5; cursor: wait; }
 .tile-dark { grid-area: 2 / 2 / 4 / 4; }
 .tile-merchant { grid-area: 3 / 1 / 4 / 2; }
 
-.tile-dark { background: #202438; border-color: #202438; justify-content: flex-start; padding: 32px; }
+.tile-dark { background: #0e0e14; border-color: #0e0e14; justify-content: flex-start; padding: 32px; }
 .tile-dark .dark-copy { position: relative; z-index: 2; max-width: 60%; }
 .tile-dark h3 { color: #fff; font-size: clamp(22px, 2.6vw, 34px); letter-spacing: -0.03em; line-height: 1.06; max-width: 16ch; margin: 0 0 14px; }
 .tile-dark p { color: rgba(255, 255, 255, 0.62); font-size: 15px; line-height: 1.5; max-width: 34ch; margin: 0; }
@@ -204,7 +204,7 @@ button[disabled] { opacity: 0.5; cursor: wait; }
 .tile-dark .cmd { font-family: var(--mono); font-size: 13.5px; color: rgba(255, 255, 255, 0.75); }
 .tile-dark .cmd b { color: #b7a8f8; font-weight: 500; }
 .tile-dark .arrow { border-color: rgba(255, 255, 255, 0.28); color: #fff; }
-.tile-dark:hover .arrow { background: #fff; color: #202438; }
+.tile-dark:hover .arrow { background: #fff; color: #0e0e14; }
 .dark-art { position: absolute; right: -3%; bottom: -8%; width: min(440px, 52%); opacity: 0.92; pointer-events: none; z-index: 1; }
 .dark-art .iso { width: 100%; height: auto; }
 
