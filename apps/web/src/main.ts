@@ -14,7 +14,7 @@ function appShell(active: string, body: HTMLElement) {
   runCleanup();
   const items = [['#/check', 'Check a payment'], ['#/pay', 'Demo checkout'], ['#/merchant', 'Merchant'], ['#/monitor', 'Network monitor'], ['#/about', 'How it works']];
   const sidebar = h(`<aside class="sidebar">
-    <a href="#/" class="brand">${MARK}<span class="bt"><b>Settled</b><em>Zero-conf settlement</em></span></a>
+    <a href="#/" class="brand">${MARK}<b>Settled</b></a>
     <nav>${items.map(([href, label]) => `<a href="${href}" class="${href === active ? 'on' : ''}">${label}</a>`).join('')}</nav>
     <div class="foot">
       <span class="stat" id="sstat"><span class="dot"></span>reading mainnet…</span>
@@ -33,67 +33,55 @@ function appShell(active: string, body: HTMLElement) {
 
 const isTxid = (v: string) => /^[0-9a-f]{64}$/i.test(v);
 
-/** Faint, constantly-shifting ASCII field over the hero spectrum, with real words seeded in. */
-function mountGlyphs(base: HTMLElement, reveal: HTMLElement) {
-  const cols = 132, rows = 54, charset = 'ABCDEFGHJKLMNPRTUVXYZ0123456789/\\<>=+*{}[]#$%&';
-  const tokens = ['SETTLED', 'CLEARED', 'RECEIVED', 'PENDING', 'ZERO-CONF', 'DSPROOF', 'PROVABLE', '0xBCH'];
-  const cell = () => (Math.random() < 0.5 ? charset[(Math.random() * charset.length) | 0] : ' ');
-  const grid = Array.from({ length: cols * rows }, cell);
-  const render = () => {
-    let s = '';
-    for (let r = 0; r < rows; r++) s += grid.slice(r * cols, (r + 1) * cols).join('') + '\n';
-    base.textContent = s; reveal.textContent = s;
-  };
-  const seed = () => { // drop a real word into the lower half, where the bars are
-    const w = tokens[(Math.random() * tokens.length) | 0];
-    const r = (rows >> 1) + ((Math.random() * (rows >> 1)) | 0);
-    const c = (Math.random() * (cols - w.length)) | 0;
-    for (let i = 0; i < w.length; i++) grid[r * cols + c + i] = w[i];
-  };
-  render();
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const t1 = setInterval(() => { for (let k = 0; k < 70; k++) grid[(Math.random() * grid.length) | 0] = cell(); render(); }, 120);
-  const t2 = setInterval(seed, 2400);
-  cleanup.push(() => { clearInterval(t1); clearInterval(t2); });
+/** 1-bit ordered dithering (Bayer 8x8) painted onto a canvas, scaled up for chunky pixels. */
+const BAYER8 = [
+  0, 48, 12, 60, 3, 51, 15, 63, 32, 16, 44, 28, 35, 19, 47, 31,
+  8, 56, 4, 52, 11, 59, 7, 55, 40, 24, 36, 20, 43, 27, 39, 23,
+  2, 50, 14, 62, 1, 49, 13, 61, 34, 18, 46, 30, 33, 17, 45, 29,
+  10, 58, 6, 54, 9, 57, 5, 53, 42, 26, 38, 22, 41, 25, 37, 21,
+];
+
+/** Hero blob: dense/solid left-centre, dithering out to scattered dots on the right and edges. */
+function heroField(u: number, v: number): number {
+  const vwin = Math.sin(Math.PI * Math.min(Math.max(v, 0), 1)); // 0 at top/bottom, 1 mid
+  let d = (0.86 - u) / 0.34;
+  d *= 0.45 + 0.75 * vwin;
+  d += 0.17 * Math.sin(u * 7.5 + v * 4) * Math.sin(v * 5.2 + 0.6);
+  d += 0.1 * Math.sin(u * 16 + 2) * vwin;
+  const core = Math.exp(-(((u - 0.33) ** 2) / 0.1 + ((v - 0.5) ** 2) / 0.18));
+  return Math.max(d, core * 1.15);
 }
 
-/** Cursor light-beam + ASCII "flashlight" reveal on the hero. */
-function mountHeroInteract(hero: HTMLElement) {
-  let raf = 0, x = 0, y = 0;
-  const apply = () => { raf = 0; hero.style.setProperty('--mx', x + 'px'); hero.style.setProperty('--my', y + 'px'); };
-  const move = (e: PointerEvent) => {
-    const r = hero.getBoundingClientRect();
-    x = e.clientX - r.left; y = e.clientY - r.top;
-    hero.classList.add('lit');
-    if (!raf) raf = requestAnimationFrame(apply);
-  };
-  const leave = () => hero.classList.remove('lit');
-  hero.addEventListener('pointermove', move);
-  hero.addEventListener('pointerleave', leave);
-  cleanup.push(() => { hero.removeEventListener('pointermove', move); hero.removeEventListener('pointerleave', leave); if (raf) cancelAnimationFrame(raf); });
+/** Sparse dotted band (the green accent): densest left, trailing off to the right. */
+function stripField(u: number, v: number): number {
+  const vwin = Math.sin(Math.PI * Math.min(Math.max(v, 0), 1));
+  return ((0.5 - u) * 1.3 + 0.18 * Math.sin(u * 26) + 0.1) * (0.4 + 0.6 * vwin);
 }
 
-/** Frosted settlement spectrum — a soft blurred histogram that dissolves into the cream. */
-function spectrum(): string {
-  const n = 96, W = 1200, H = 620, bw = W / n;
-  let bars = '';
-  for (let i = 0; i < n; i++) {
-    const t = i / (n - 1);
-    const wave = 0.5 + 0.35 * Math.sin(i * 0.5) * Math.sin(i * 0.17 + 1.3) + 0.15 * Math.sin(i * 1.1);
-    const hgt = (150 + wave * 300 + t * 140) * (0.72 + 0.28 * t); // present across, leaning right
-    const op = (0.40 + 0.5 * wave) * (0.5 + 0.5 * t);
-    bars += `<rect x="${(i * bw + 1.5).toFixed(1)}" y="${(H - hgt).toFixed(1)}" width="${(bw - 3).toFixed(1)}" height="${hgt.toFixed(1)}" fill="url(#sg)" opacity="${op.toFixed(2)}"/>`;
+function paintDither(canvas: HTMLCanvasElement, box: HTMLElement, rgb: [number, number, number], field: (u: number, v: number) => number) {
+  const rect = box.getBoundingClientRect();
+  const cw = Math.max(6, Math.round((rect.width || 900) / 3));
+  const ch = Math.max(6, Math.round((rect.height || 300) / 3));
+  canvas.width = cw; canvas.height = ch;
+  const ctx = canvas.getContext('2d'); if (!ctx) return;
+  const img = ctx.createImageData(cw, ch), [r, g, b] = rgb;
+  for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+    const th = (BAYER8[(y & 7) * 8 + (x & 7)] + 0.5) / 64;
+    if (field(x / cw, y / ch) > th) {
+      const i = (y * cw + x) * 4;
+      img.data[i] = r; img.data[i + 1] = g; img.data[i + 2] = b; img.data[i + 3] = 255;
+    }
   }
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
-    <defs>
-      <linearGradient id="sg" x1="0" y1="1" x2="0" y2="0">
-        <stop offset="0" stop-color="#8fb0e2"/><stop offset="0.45" stop-color="#aec8ea"/>
-        <stop offset="0.8" stop-color="#cfe0d8"/><stop offset="1" stop-color="#cfe0d8" stop-opacity="0"/>
-      </linearGradient>
-      <filter id="sb" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="4"/></filter>
-    </defs>
-    <g filter="url(#sb)">${bars}</g>
-  </svg>`;
+  ctx.putImageData(img, 0, 0);
+}
+
+function mountDither(canvas: HTMLCanvasElement, box: HTMLElement, rgb: [number, number, number], field: (u: number, v: number) => number) {
+  let t = 0;
+  const draw = () => paintDither(canvas, box, rgb, field);
+  requestAnimationFrame(draw);
+  const onResize = () => { clearTimeout(t); t = window.setTimeout(draw, 160); };
+  window.addEventListener('resize', onResize);
+  cleanup.push(() => { window.removeEventListener('resize', onResize); clearTimeout(t); });
 }
 
 /* ============================================================
@@ -103,42 +91,37 @@ function landingPage() {
   runCleanup();
   const body = h(`<main class="landing">
     <section class="hero">
-      <div class="spectrum" id="spectrum"></div>
-      <div class="beam"></div>
-      <pre class="glyphs" id="glyphs" aria-hidden="true"></pre>
-      <pre class="glyphs glyph-reveal" id="glyphs2" aria-hidden="true"></pre>
       <header class="site-head">
-        <div class="wrap">
-          <a href="#/" class="brand" data-scroll="top">${MARK}<span class="bt"><b>Settled</b><em>Zero-conf settlement</em></span></a>
-          <nav class="site-nav"><a data-scroll="how">How it works</a><a data-scroll="proof">Proof</a><a data-scroll="dev">Developers</a></nav>
-          <a class="pill-link" href="#/check">Open the app</a>
-        </div>
+        <a href="#/" class="brand" data-scroll="top">${MARK}<b>Settled</b></a>
+        <nav class="site-nav"><a data-scroll="how">How it works</a><a data-scroll="proof">Proof</a><a data-scroll="dev">Developers</a></nav>
+        <span class="sp"></span>
+        <a class="btn open-app" href="#/check">Open the app</a>
       </header>
-      <div class="hero-inner">
-        <h1>Certainty for every Bitcoin Cash payment, the instant it arrives.</h1>
-        <p class="hero-lede">Settled checks a payment and its whole unconfirmed history against the same rules a Bitcoin Cash node uses, and tells the merchant the moment it is genuinely safe to hand over the goods.</p>
+      <div class="hero-copy">
+        <h1>Settled: settlement certainty for Bitcoin Cash.</h1>
+        <p class="hero-sub">Know the moment a zero-confirmation payment is really safe to hand over.</p>
         <div class="hero-cta">
           <a class="btn" href="#/check">Launch the app</a>
           <button class="btn-ghost" data-scroll="how">See how it works</button>
         </div>
         <span class="hero-note" id="note"><span class="dot"></span>Reading mainnet…</span>
       </div>
-      <div class="scroll-cue"><span>scroll</span><span class="ln"></span></div>
+      <div class="dither"><canvas id="blob"></canvas><span class="tag">bch · mainnet</span></div>
     </section>
 
     <section class="block" id="how">
-      <h2 class="statement">How Settled reads a payment.</h2>
-      <p class="section-lede">No new trust assumptions. It applies the exact test a Bitcoin Cash node applies, across the payment's whole unconfirmed history, and returns a plain verdict that updates live.</p>
+      <h2 class="s-head"><span class="label">How it works:</span> the path a payment takes.</h2>
+      <p class="section-lede">No new trust assumptions. Settled applies the exact test a Bitcoin Cash node applies, across the payment's whole unconfirmed history, and returns a plain verdict that updates live.</p>
       <ol class="flow">
-        <li><span class="step">1</span><h3>Take the payment</h3><p>Give it a transaction id, or point it at a merchant address to watch.</p></li>
-        <li><span class="step">2</span><h3>Walk the history</h3><p>It follows every unconfirmed ancestor the payment still depends on.</p></li>
-        <li><span class="step">3</span><h3>Score each input</h3><p>Each input is judged exactly like BCHN’s getdsproofscore — can a double-spend proof protect it?</p></li>
-        <li><span class="step">4</span><h3>Return a verdict</h3><p>Pending, Received, Confirmed or Settled — with the reason behind it.</p></li>
+        <li><span class="step">01</span><h3>Take the payment</h3><p>Give it a transaction id, or point it at a merchant address to watch.</p></li>
+        <li><span class="step">02</span><h3>Walk the history</h3><p>It follows every unconfirmed ancestor the payment still depends on.</p></li>
+        <li><span class="step">03</span><h3>Score each input</h3><p>Each input is judged exactly like BCHN’s getdsproofscore — can a double-spend proof protect it?</p></li>
+        <li><span class="step">04</span><h3>Return a verdict</h3><p>Pending, Received, Confirmed or Settled — with the reason behind it.</p></li>
       </ol>
     </section>
 
     <section class="block">
-      <h2 class="statement">Zero-conf only holds when the network can raise a double-spend proof. For most payments, <span class="u">it cannot</span>.</h2>
+      <h2 class="s-head"><span class="label">The gap:</span> zero-conf only holds when the network can raise a double-spend proof.</h2>
       <p class="section-lede">That protection needs every input — and every unconfirmed transaction behind it — to spend a plain output with a standard signature. Three things break it today, and nothing at the counter says so.</p>
       <div class="facts">
         <div class="fact"><div class="fig bad">51%</div><div><h3>spend a contract or non-standard output</h3><p>A double-spend proof can never cover these, so more than half of mainnet traffic has no zero-conf protection at all.</p></div></div>
@@ -148,13 +131,13 @@ function landingPage() {
     </section>
 
     <section class="block" id="proof">
-      <h2 class="statement">The same wallet paid the same 1,000 sats two ways.</h2>
-      <p class="section-lede">On mainnet, 21 November 2026. Settled read each payment before it was mined — one safe to accept, one not.</p>
+      <h2 class="s-head"><span class="label">On mainnet:</span> the same 1,000 sats, paid two ways.</h2>
+      <p class="section-lede">On 21 November 2026, one wallet paid the demo merchant twice. Settled read each payment before it was mined — one safe to accept, one not.</p>
       <div class="proof" id="proofgrid"></div>
     </section>
 
     <section class="block">
-      <h2 class="statement">It decides with the same rules a Bitcoin Cash node uses.</h2>
+      <h2 class="s-head"><span class="label">The rules:</span> it decides like a Bitcoin Cash node.</h2>
       <p class="section-lede">Settled walks every unconfirmed ancestor and scores each input exactly like BCHN’s <code>getdsproofscore</code>. Anything the network cannot protect pulls the whole payment to “pending”.</p>
       <div class="rulebook" id="rules"></div>
     </section>
@@ -162,7 +145,7 @@ function landingPage() {
     <section class="block" id="dev">
       <div class="signoff">
         <div>
-          <h2>Put the settlement check in your own checkout.</h2>
+          <h2><span class="label">For developers:</span> put the settlement check in your own checkout.</h2>
           <p>The engine ships as a TypeScript library and a hosted API — the same one answering this page.</p>
         </div>
         <div class="acts">
@@ -171,6 +154,7 @@ function landingPage() {
           <a class="textlink" href="#/about">Read the method</a>
         </div>
       </div>
+      <div class="dither-strip"><canvas id="strip"></canvas></div>
       <div class="site-footer">
         <span>Settled — a CHIP-2025-11 reference implementation, built at BCH BLAZE 2026. <a href="${BANNER.slides}" target="_blank" rel="noopener">Presentation</a></span>
         <div class="links"><a href="#/check">Open the app</a><a href="#/about">How it works</a><a href="${BANNER.repo}" target="_blank" rel="noopener">Source</a><a href="https://www.npmjs.com/package/settled-core" target="_blank" rel="noopener">npm</a></div>
@@ -178,9 +162,8 @@ function landingPage() {
     </section>
   </main>`);
   app.replaceChildren(body);
-  (body.querySelector('#spectrum') as HTMLElement).innerHTML = spectrum();
-  mountGlyphs(body.querySelector('#glyphs') as HTMLElement, body.querySelector('#glyphs2') as HTMLElement);
-  mountHeroInteract(body.querySelector('.hero') as HTMLElement);
+  mountDither(body.querySelector('#blob') as HTMLCanvasElement, body.querySelector('.dither') as HTMLElement, [45, 51, 242], heroField);
+  mountDither(body.querySelector('#strip') as HTMLCanvasElement, body.querySelector('.dither-strip') as HTMLElement, [31, 157, 99], stripField);
 
   // in-page scroll nav (the hash router would otherwise hijack anchors)
   body.querySelectorAll<HTMLElement>('[data-scroll]').forEach((el) => el.addEventListener('click', (e) => {

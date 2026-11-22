@@ -17,8 +17,8 @@ export const STATE_COPY: Record<State, { label: string; hint: string }> = {
   unknown: { label: 'Not found', hint: 'The network does not know this transaction.' },
 };
 
-/** Slate diamond mark with a settled check. */
-export const MARK = `<svg class="mark" viewBox="0 0 28 28" aria-hidden="true"><rect x="6.5" y="6.5" width="15" height="15" rx="3" transform="rotate(45 14 14)" fill="none" stroke="#273747" stroke-width="1.4"/><path d="M9.8 14.2l2.9 2.9 5.6-6.6" fill="none" stroke="#2f8f5b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+/** Electric-blue dot mark. */
+export const MARK = `<svg class="mark" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#2d33f2"/><circle cx="10" cy="10" r="3.1" fill="#fff"/></svg>`;
 
 export function nav(active: string): HTMLElement {
   const items = [['#/check', 'Check'], ['#/merchant', 'Merchant'], ['#/monitor', 'Network monitor'], ['#/about', 'How it works']];
