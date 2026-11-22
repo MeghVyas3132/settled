@@ -2,33 +2,46 @@ import QRCode from 'qrcode';
 import './style.css';
 import { broadcast, getAddress, getCoins, getMonitor, getTx, streamTx, type Coin, type Report } from './api';
 import { BANNER, EXPLORER, MERCHANT, PROOF } from './config';
-import { banner, esc, h, liveChip, nav, reportCard, short, STATE_COPY, statePill, terminal } from './ui';
+import { esc, h, MARK, nav, reportCard, short, STATE_COPY, statePill, terminal } from './ui';
 import { WizardWallet } from './wallet';
 
 const app = document.getElementById('app')!;
 let cleanup: (() => void)[] = [];
 
-const LOGO = `<svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="none" stroke="#b0894f" stroke-width="1.5"/><path d="M10 16.5l4 4 8-9" fill="none" stroke="#39c07a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-
 function shell(active: string, body: HTMLElement) {
   cleanup.forEach((f) => f());
   cleanup = [];
-  const chip = liveChip();
-  const header = h(`<header><a href="#/" class="logo">${LOGO}Settled</a><span class="tag">The settlement check for Bitcoin Cash payments</span></header>`);
-  header.append(chip);
-  app.replaceChildren(banner(), header, nav(active), body);
-  getMonitor().then((m) => {
-    if (m?.blocks?.pct) chip.innerHTML = `<span class="pulse"></span><b>${m.blocks.pct.coverable}%</b>&nbsp;provable now`;
-  }).catch(() => { chip.remove(); });
+  const top = h(`<div class="topbar">
+    <a href="#/" class="brand">${MARK}<span class="bt"><b>Settled</b><em>Zero-conf settlement</em></span></a>
+    ${nav(active).outerHTML}
+    <a class="pill-link" href="#/pay">Open the demo</a>
+  </div>`);
+  app.replaceChildren(top, body);
 }
 
 const isTxid = (v: string) => /^[0-9a-f]{64}$/i.test(v);
 
-/** Security-print guilloché rosette for the hero stamp. */
-function guilloche(): string {
-  const n = 30; let e = '';
-  for (let i = 0; i < n; i++) e += `<ellipse cx="110" cy="110" rx="100" ry="38" transform="rotate(${(180 / n) * i} 110 110)"/>`;
-  return `<svg class="guilloche" viewBox="0 0 220 220" aria-hidden="true"><circle class="ring" cx="110" cy="110" r="104"/><circle class="ring" cx="110" cy="110" r="68"/>${e}</svg>`;
+/** Frosted settlement spectrum — a soft blurred histogram that dissolves into the cream. */
+function spectrum(): string {
+  const n = 96, W = 1200, H = 620, bw = W / n;
+  let bars = '';
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1);
+    const wave = 0.5 + 0.35 * Math.sin(i * 0.5) * Math.sin(i * 0.17 + 1.3) + 0.15 * Math.sin(i * 1.1);
+    const hgt = (150 + wave * 300 + t * 140) * (0.72 + 0.28 * t); // present across, leaning right
+    const op = (0.40 + 0.5 * wave) * (0.5 + 0.5 * t);
+    bars += `<rect x="${(i * bw + 1.5).toFixed(1)}" y="${(H - hgt).toFixed(1)}" width="${(bw - 3).toFixed(1)}" height="${hgt.toFixed(1)}" fill="url(#sg)" opacity="${op.toFixed(2)}"/>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="sg" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stop-color="#8fb0e2"/><stop offset="0.45" stop-color="#aec8ea"/>
+        <stop offset="0.8" stop-color="#cfe0d8"/><stop offset="1" stop-color="#cfe0d8" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="sb" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="4"/></filter>
+    </defs>
+    <g filter="url(#sb)">${bars}</g>
+  </svg>`;
 }
 
 /* ============================================================
@@ -37,45 +50,39 @@ function guilloche(): string {
 function landingPage() {
   const body = h(`<main class="landing">
     <section class="hero">
-      <div class="hero-grid">
-        <div class="hero-copy">
-          <h1 class="hero-head">Arrived isn’t settled.</h1>
-          <p class="hero-lede">A Bitcoin Cash payment can look paid the instant it lands, then be reversed before it is mined. Settled checks the payment and its whole unconfirmed history — the same rules a BCH node uses — and tells the merchant the moment it is genuinely safe to hand over the goods.</p>
-          <form id="hf" class="hero-form"><input id="ht" placeholder="Paste a transaction id" spellcheck="false" autocomplete="off"/><button>Check</button></form>
-          <div class="hero-cta">
-            <a class="btn btn-ghost" href="#/pay">See a live payment</a>
-            <a class="textlink" href="#/about">How it decides</a>
-          </div>
-        </div>
-        <div class="stamp-stage cleared reveal" id="stamp"></div>
+      <div class="spectrum" id="spectrum"></div>
+      <div class="hero-inner">
+        <h1>Certainty for every Bitcoin Cash payment, the instant it arrives.</h1>
+        <p class="hero-lede">Settled checks a payment and its whole unconfirmed history against the same rules a Bitcoin Cash node uses, and tells the merchant the moment it is genuinely safe to hand over the goods.</p>
+        <form id="hf" class="hero-form"><input id="ht" placeholder="Paste a transaction id" spellcheck="false" autocomplete="off"/><button>Check</button></form>
+        <span class="hero-note" id="note"><span class="dot"></span>Reading mainnet…</span>
       </div>
-      <div class="tape"><div class="tape-inner" id="tape"><span class="muted" style="padding:16px 0">Reading mainnet…</span></div></div>
     </section>
 
-    <section>
+    <section class="block">
       <h2 class="statement">Zero-conf only holds when the network can raise a double-spend proof. For most payments, <span class="u">it cannot</span>.</h2>
       <p class="section-lede">That protection needs every input — and every unconfirmed transaction behind it — to spend a plain output with a standard signature. Three things break it today, and nothing at the counter says so.</p>
-      <div class="ledger">
-        <div class="ledger-row"><div class="fig bad">51%</div><div><h3>spend a contract or non-standard output</h3><p>A double-spend proof can never cover these, so more than half of mainnet traffic has no zero-conf protection at all.</p></div></div>
-        <div class="ledger-row"><div class="fig">every</div><div><h3>WizardConnect payment is unprovable</h3><p>The protocol requires signing with SIGHASH_UTXOS, which a Bitcoin Cash node cannot build a proof for. The protection score is 0, every time.</p></div></div>
-        <div class="ledger-row"><div class="fig">none</div><div><h3>of today’s wallets warn the merchant</h3><p>Point-of-sale screens show “received” the instant a payment lands, whether or not the network could ever protect it.</p></div></div>
+      <div class="facts">
+        <div class="fact"><div class="fig bad">51%</div><div><h3>spend a contract or non-standard output</h3><p>A double-spend proof can never cover these, so more than half of mainnet traffic has no zero-conf protection at all.</p></div></div>
+        <div class="fact"><div class="fig">every</div><div><h3>WizardConnect payment is unprovable</h3><p>The protocol requires signing with SIGHASH_UTXOS, which a Bitcoin Cash node cannot build a proof for. The protection score is 0, every time.</p></div></div>
+        <div class="fact"><div class="fig">none</div><div><h3>of today’s wallets warn the merchant</h3><p>Point-of-sale screens show “received” the instant a payment lands, whether or not the network could ever protect it.</p></div></div>
       </div>
     </section>
 
-    <section>
+    <section class="block">
       <h2 class="statement">The same wallet paid the same 1,000 sats two ways.</h2>
-      <p class="section-lede">On mainnet, 21 November 2026. Settled read each payment before it was mined — one cleared, one held.</p>
-      <div class="receipts" id="receipts"></div>
+      <p class="section-lede">On mainnet, 21 November 2026. Settled read each payment before it was mined — one safe to accept, one not.</p>
+      <div class="proof" id="proof"></div>
     </section>
 
-    <section>
+    <section class="block">
       <h2 class="statement">It decides with the same rules a Bitcoin Cash node uses.</h2>
       <p class="section-lede">Settled walks every unconfirmed ancestor and scores each input exactly like BCHN’s <code>getdsproofscore</code>. Anything the network cannot protect pulls the whole payment to “pending”.</p>
       <div class="rulebook" id="rules"></div>
       <p style="margin-top:30px"><a class="textlink" href="#/about">Read the full method</a></p>
     </section>
 
-    <section>
+    <section class="block">
       <div class="signoff">
         <div>
           <h2>Put the settlement check in your own checkout.</h2>
@@ -88,26 +95,13 @@ function landingPage() {
         </div>
       </div>
       <div class="site-footer">
-        <span>Settled — a CHIP-2025-11 reference implementation, built at BCH BLAZE 2026.</span>
-        <div class="links"><a href="#/check">Check</a><a href="#/pay">Demo</a><a href="#/merchant">Merchant</a><a href="#/monitor">Monitor</a><a href="#/about">Method</a><a href="${BANNER.repo}" target="_blank" rel="noopener">Source</a></div>
+        <span>Settled — a CHIP-2025-11 reference implementation, built at BCH BLAZE 2026. <a href="${BANNER.slides}" target="_blank" rel="noopener">Presentation</a></span>
+        <div class="links"><a href="#/check">Check</a><a href="#/pay">Demo</a><a href="#/merchant">Merchant</a><a href="#/monitor">Monitor</a><a href="#/about">How it works</a><a href="${BANNER.repo}" target="_blank" rel="noopener">Source</a></div>
       </div>
     </section>
   </main>`);
   shell('#/', body);
-
-  // Hero clearance stamp
-  body.querySelector('#stamp')!.innerHTML = `${guilloche()}
-    <div class="chit">
-      <div class="chit-top"><span class="who">Merchant terminal</span><span class="amt">1,000 sat</span></div>
-      <div class="chit-verdict">Cleared to hand over</div>
-      <p class="chit-sub">Protected by double-spend proofs until it is mined.</p>
-      <div class="chit-rows">
-        <div class="r"><span>Verdict</span><span class="v good">Received</span></div>
-        <div class="r"><span>Protection score</span><span class="v good">1.00</span></div>
-        <div class="r"><span>Signature</span><span class="v">ALL | FORKID</span></div>
-      </div>
-      <div class="seal">Cleared<small>SETTLED</small></div>
-    </div>`;
+  (body.querySelector('#spectrum') as HTMLElement).innerHTML = spectrum();
 
   // Hero form → deep link
   body.querySelector('#hf')!.addEventListener('submit', (e) => {
@@ -117,31 +111,31 @@ function landingPage() {
     else location.hash = '#/check';
   });
 
-  // Live mainnet tape
+  // Live mainnet note
   getMonitor().then((m) => {
     const b = m?.blocks;
-    const el = body.querySelector('#tape')!;
-    if (!b?.txs) return body.querySelector('.tape')?.remove();
-    el.innerHTML = `
-      <div class="tape-cell lead"><div class="lab">Provable right now</div><div class="fig">${b.pct.coverable}%</div></div>
-      <div class="tape-cell"><div class="lab">Contract spends</div><div class="fig">${b.pct.nonP2pkh}%</div></div>
-      <div class="tape-cell"><div class="lab">Signed SIGHASH_UTXOS</div><div class="fig">${b.pct.utxos}%</div></div>
-      <span class="live"><span class="pulse"></span>live, last ${b.count} blocks</span>`;
-  }).catch(() => body.querySelector('.tape')?.remove());
+    const el = body.querySelector('#note')!;
+    if (!b?.txs) return el.remove();
+    el.innerHTML = `<span class="dot"></span><b>${b.pct.coverable}%</b>&nbsp;of Bitcoin Cash mainnet is zero-conf provable right now`;
+  }).catch(() => body.querySelector('#note')?.remove());
 
-  // Proof — two receipts
-  const receipt = (p: typeof PROOF.wizard | typeof PROOF.normal, mark: string, verdict: string, held: boolean) =>
-    h(`<div class="receipt ${held ? 'held' : 'cleared'}">
-      <div class="head"><span class="how">${esc(p.how)}</span><span class="mark">${mark}</span></div>
-      <div class="verdict">${verdict}</div>
-      <p class="vsub">${esc(p.line)}</p>
-      <div class="line"><span>Verdict</span><span class="v">${STATE_COPY[p.state].label}, score ${p.score}</span></div>
-      <div class="line"><span>Signature</span><span class="v">${esc(p.sighash)}</span></div>
-      <div class="line"><span>Transaction</span><a class="v" href="${EXPLORER}${p.txid}" target="_blank" rel="noopener">${short(p.txid)}</a></div>
+  // Proof — two comparison panels
+  const panel = (p: typeof PROOF.wizard | typeof PROOF.normal, verdict: string) =>
+    h(`<div class="panel ${p.state}">
+      <div class="ptop">
+        <p class="how">${esc(p.how)}</p>
+        <div class="verdict">${verdict}</div>
+        <p class="vsub">${esc(p.line)}</p>
+      </div>
+      <div class="meta">
+        <div class="r"><span>Verdict</span><span class="v">${STATE_COPY[p.state].label}, score ${p.score}</span></div>
+        <div class="r"><span>Signature</span><span class="v">${esc(p.sighash)}</span></div>
+        <div class="r"><span>Transaction</span><a class="v" href="${EXPLORER}${p.txid}" target="_blank" rel="noopener">${short(p.txid)}</a></div>
+      </div>
     </div>`);
-  body.querySelector('#receipts')!.append(
-    receipt(PROOF.wizard, 'Held', 'Wait', true),
-    receipt(PROOF.normal, 'Cleared', 'Cleared to hand over', false),
+  body.querySelector('#proof')!.append(
+    panel(PROOF.wizard, 'Hold the goods'),
+    panel(PROOF.normal, 'Safe to hand over'),
   );
 
   // Rulebook clauses
@@ -304,7 +298,7 @@ function coinTable(coins: Coin[]): HTMLElement {
 /** What a merchant terminal shows. */
 function merchantScreen(r: Report): HTMLElement {
   const big = { pending: 'WAIT', received: 'OK TO HAND OVER', confirmed: 'CONFIRMED', settled: 'SETTLED', unknown: '…' }[r.state];
-  return terminal(r.state, big, statePill(r.state), { live: true });
+  return terminal(r.state, big, statePill(r.state));
 }
 
 /* ============================================================

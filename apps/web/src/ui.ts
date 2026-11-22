@@ -1,5 +1,5 @@
 import type { Report, State } from './api';
-import { BANNER, EXPLORER } from './config';
+import { EXPLORER } from './config';
 
 export const h = (html: string): HTMLElement => {
   const t = document.createElement('template');
@@ -17,25 +17,11 @@ export const STATE_COPY: Record<State, { label: string; hint: string }> = {
   unknown: { label: 'Not found', hint: 'The network does not know this transaction.' },
 };
 
-export function banner(): HTMLElement {
-  const donation = BANNER.donation
-    ? `<span class="don">Donate / vote (CashTokens): <code>${esc(BANNER.donation)}</code></span>` : '';
-  return h(`<div class="banner">
-    <strong>BCH BLAZE 2026</strong>
-    <a href="${BANNER.slides}" target="_blank" rel="noopener">Presentation</a>
-    <a href="${BANNER.repo}" target="_blank" rel="noopener">Source code</a>
-    ${donation}
-    <span class="muted">Built from scratch during BLAZE · 14–22 Nov 2026</span>
-  </div>`);
-}
-
-/** Header live mainnet chip. The number is filled asynchronously. */
-export function liveChip(): HTMLElement {
-  return h(`<span class="live-chip"><span class="pulse"></span>reading mainnet</span>`);
-}
+/** Slate diamond mark with a settled check. */
+export const MARK = `<svg class="mark" viewBox="0 0 28 28" aria-hidden="true"><rect x="6.5" y="6.5" width="15" height="15" rx="3" transform="rotate(45 14 14)" fill="none" stroke="#273747" stroke-width="1.4"/><path d="M9.8 14.2l2.9 2.9 5.6-6.6" fill="none" stroke="#2f8f5b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 export function nav(active: string): HTMLElement {
-  const items = [['#/check', 'Check a payment'], ['#/pay', 'Demo checkout'], ['#/merchant', 'Merchant'], ['#/monitor', 'Network monitor'], ['#/about', 'How it works']];
+  const items = [['#/check', 'Check'], ['#/merchant', 'Merchant'], ['#/monitor', 'Network monitor'], ['#/about', 'How it works']];
   return h(`<nav>${items.map(([href, label]) => `<a href="${href}" class="${href === active ? 'on' : ''}">${label}</a>`).join('')}</nav>`);
 }
 
@@ -43,9 +29,9 @@ export function statePill(s: State): string {
   return `<span class="pill ${s}">${STATE_COPY[s].label}</span>`;
 }
 
-/** The signature component: a merchant terminal showing a verdict. */
-export function terminal(state: State, big: string, subHtml = '', opts: { live?: boolean; bezel?: string } = {}): HTMLElement {
-  return h(`<section class="terminal ${state}${opts.live ? ' live' : ''}">
+/** A merchant verdict card. */
+export function terminal(state: State, big: string, subHtml = '', opts: { bezel?: string } = {}): HTMLElement {
+  return h(`<section class="terminal ${state}">
     <div class="bezel"><span class="led"></span>${esc(opts.bezel ?? 'Merchant terminal')}</div>
     <div class="screen"><div class="t1">${big}</div>${subHtml ? `<div class="t2">${subHtml}</div>` : ''}</div>
   </section>`);
