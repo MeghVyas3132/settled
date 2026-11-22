@@ -41,17 +41,6 @@ const BAYER8 = [
   10, 58, 6, 54, 9, 57, 5, 53, 42, 26, 38, 22, 41, 25, 37, 21,
 ];
 
-/** Hero blob: dense/solid left-centre, dithering out to scattered dots on the right and edges. */
-function heroField(u: number, v: number): number {
-  const vwin = Math.sin(Math.PI * Math.min(Math.max(v, 0), 1)); // 0 at top/bottom, 1 mid
-  let d = (0.86 - u) / 0.34;
-  d *= 0.45 + 0.75 * vwin;
-  d += 0.17 * Math.sin(u * 7.5 + v * 4) * Math.sin(v * 5.2 + 0.6);
-  d += 0.1 * Math.sin(u * 16 + 2) * vwin;
-  const core = Math.exp(-(((u - 0.33) ** 2) / 0.1 + ((v - 0.5) ** 2) / 0.18));
-  return Math.max(d, core * 1.15);
-}
-
 /** Sparse dotted band (the green accent): densest left, trailing off to the right. */
 function stripField(u: number, v: number): number {
   const vwin = Math.sin(Math.PI * Math.min(Math.max(v, 0), 1));
@@ -84,6 +73,76 @@ function mountDither(canvas: HTMLCanvasElement, box: HTMLElement, rgb: [number, 
   cleanup.push(() => { window.removeEventListener('resize', onResize); clearTimeout(t); });
 }
 
+/** Full-bleed divider band: a dense blue dither fading top and bottom. */
+function bandField(u: number, v: number): number {
+  return Math.sin(Math.PI * Math.min(Math.max(v, 0), 1)) * (0.66 + 0.34 * Math.sin(u * 13 + 2)) - 0.08 - u * 0.08;
+}
+
+/** Lazy-loaded electric-blue voxel blob — the 3D hero element. Disposed on route change. */
+async function mount3D(stage: HTMLElement) {
+  const THREE = await import('three');
+  await new Promise((r) => requestAnimationFrame(() => r(null))); // let layout settle so we read the real size
+  const w = stage.clientWidth || 640, hh = stage.clientHeight || 520;
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0xffffff, 7, 16);
+  const camera = new THREE.PerspectiveCamera(42, w / hh, 0.1, 100);
+  camera.position.set(0, 0, 9.4);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(w, hh);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  stage.appendChild(renderer.domElement);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+  const key = new THREE.DirectionalLight(0xffffff, 2.3); key.position.set(5, 7, 8); scene.add(key);
+  const rim = new THREE.DirectionalLight(0x2d33f2, 1.7); rim.position.set(-7, -3, -5); scene.add(rim);
+
+  const N = 2600;
+  const geo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
+  const mat = new THREE.MeshStandardMaterial({ roughness: 0.42, metalness: 0.08, vertexColors: false });
+  const mesh = new THREE.InstancedMesh(geo, mat, N);
+  const m = new THREE.Matrix4(), pos = new THREE.Vector3(), quat = new THREE.Quaternion(), scl = new THREE.Vector3(), eul = new THREE.Euler(), col = new THREE.Color();
+  for (let i = 0; i < N; i++) {
+    const u = Math.random() * 2 - 1, th = Math.random() * Math.PI * 2, r = Math.cbrt(Math.random());
+    const rr = Math.sqrt(1 - u * u);
+    const bx = rr * Math.cos(th), by = u, bz = rr * Math.sin(th);
+    const rad = (2.5 + 0.5 * Math.sin(bx * 3 + bz * 2) + 0.3 * Math.cos(by * 4)) * r;
+    pos.set(bx * rad, by * rad, bz * rad);
+    const s = 0.55 + Math.random() * 1.0; scl.set(s, s, s);
+    eul.set(Math.random() * 3, Math.random() * 3, Math.random() * 3); quat.setFromEuler(eul);
+    m.compose(pos, quat, scl); mesh.setMatrixAt(i, m);
+    col.setHSL(0.66, 0.92, 0.4 + Math.random() * 0.26); mesh.setColorAt(i, col);
+  }
+  mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  scene.add(mesh);
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0, running = true;
+  const onMove = (e: PointerEvent) => { const b = stage.getBoundingClientRect(); tx = (e.clientX - b.left) / b.width - 0.5; ty = (e.clientY - b.top) / b.height - 0.5; };
+  stage.addEventListener('pointermove', onMove);
+  let last = performance.now();
+  const tick = () => {
+    if (!running) return;
+    raf = requestAnimationFrame(tick);
+    const now = performance.now();
+    const dt = Math.min((now - last) / 1000, 0.05); last = now;
+    cx += (tx - cx) * 0.05; cy += (ty - cy) * 0.05;
+    if (!reduce) mesh.rotation.y += dt * 0.14;
+    mesh.rotation.x = cy * 0.5;
+    scene.rotation.y = cx * 0.5;
+    renderer.render(scene, camera);
+  };
+  tick();
+  const onResize = () => { const W = stage.clientWidth, H = stage.clientHeight; if (!W || !H) return; camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H); };
+  window.addEventListener('resize', onResize);
+  cleanup.push(() => {
+    running = false; cancelAnimationFrame(raf);
+    window.removeEventListener('resize', onResize); stage.removeEventListener('pointermove', onMove);
+    geo.dispose(); mat.dispose(); renderer.dispose(); renderer.domElement.remove();
+  });
+}
+
 /* ============================================================
    Landing
    ============================================================ */
@@ -97,17 +156,21 @@ function landingPage() {
         <span class="sp"></span>
         <a class="btn open-app" href="#/check">Open the app</a>
       </header>
-      <div class="hero-copy">
-        <h1>Settled: settlement certainty for Bitcoin Cash.</h1>
-        <p class="hero-sub">Know the moment a zero-confirmation payment is really safe to hand over.</p>
-        <div class="hero-cta">
-          <a class="btn" href="#/check">Launch the app</a>
-          <button class="btn-ghost" data-scroll="how">See how it works</button>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>Settled: settlement certainty for Bitcoin Cash.</h1>
+          <p class="hero-sub">Know the moment a zero-confirmation payment is really safe to hand over.</p>
+          <div class="hero-cta">
+            <a class="btn" href="#/check">Launch the app</a>
+            <button class="btn-ghost" data-scroll="how">See how it works</button>
+          </div>
+          <span class="hero-note" id="note"><span class="dot"></span>Reading mainnet…</span>
         </div>
-        <span class="hero-note" id="note"><span class="dot"></span>Reading mainnet…</span>
+        <div class="hero-3d" id="stage"></div>
       </div>
-      <div class="dither"><canvas id="blob"></canvas><span class="tag">bch · mainnet</span></div>
     </section>
+
+    <section class="band"><canvas id="band"></canvas></section>
 
     <section class="block" id="how">
       <h2 class="s-head"><span class="label">How it works:</span> the path a payment takes.</h2>
@@ -162,7 +225,8 @@ function landingPage() {
     </section>
   </main>`);
   app.replaceChildren(body);
-  mountDither(body.querySelector('#blob') as HTMLCanvasElement, body.querySelector('.dither') as HTMLElement, [45, 51, 242], heroField);
+  mount3D(body.querySelector('#stage') as HTMLElement);
+  mountDither(body.querySelector('#band') as HTMLCanvasElement, body.querySelector('.band') as HTMLElement, [45, 51, 242], bandField);
   mountDither(body.querySelector('#strip') as HTMLCanvasElement, body.querySelector('.dither-strip') as HTMLElement, [31, 157, 99], stripField);
 
   // in-page scroll nav (the hash router would otherwise hijack anchors)
