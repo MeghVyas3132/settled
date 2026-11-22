@@ -33,23 +33,44 @@ function appShell(active: string, body: HTMLElement) {
 
 const isTxid = (v: string) => /^[0-9a-f]{64}$/i.test(v);
 
-/** Faint, constantly-shifting ASCII field layered over the hero spectrum. */
-function mountGlyphs(el: HTMLElement) {
-  const cols = 94, rows = 36, charset = 'ABCDEFGHJKLMNPRTUVXYZ0123456789/\\<>=+*{}[]#$%&';
-  const cell = () => (Math.random() < 0.52 ? charset[(Math.random() * charset.length) | 0] : ' ');
+/** Faint, constantly-shifting ASCII field over the hero spectrum, with real words seeded in. */
+function mountGlyphs(base: HTMLElement, reveal: HTMLElement) {
+  const cols = 132, rows = 54, charset = 'ABCDEFGHJKLMNPRTUVXYZ0123456789/\\<>=+*{}[]#$%&';
+  const tokens = ['SETTLED', 'CLEARED', 'RECEIVED', 'PENDING', 'ZERO-CONF', 'DSPROOF', 'PROVABLE', '0xBCH'];
+  const cell = () => (Math.random() < 0.5 ? charset[(Math.random() * charset.length) | 0] : ' ');
   const grid = Array.from({ length: cols * rows }, cell);
   const render = () => {
     let s = '';
     for (let r = 0; r < rows; r++) s += grid.slice(r * cols, (r + 1) * cols).join('') + '\n';
-    el.textContent = s;
+    base.textContent = s; reveal.textContent = s;
+  };
+  const seed = () => { // drop a real word into the lower half, where the bars are
+    const w = tokens[(Math.random() * tokens.length) | 0];
+    const r = (rows >> 1) + ((Math.random() * (rows >> 1)) | 0);
+    const c = (Math.random() * (cols - w.length)) | 0;
+    for (let i = 0; i < w.length; i++) grid[r * cols + c + i] = w[i];
   };
   render();
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const t = setInterval(() => {
-    for (let k = 0; k < 55; k++) grid[(Math.random() * grid.length) | 0] = cell();
-    render();
-  }, 120);
-  cleanup.push(() => clearInterval(t));
+  const t1 = setInterval(() => { for (let k = 0; k < 70; k++) grid[(Math.random() * grid.length) | 0] = cell(); render(); }, 120);
+  const t2 = setInterval(seed, 2400);
+  cleanup.push(() => { clearInterval(t1); clearInterval(t2); });
+}
+
+/** Cursor light-beam + ASCII "flashlight" reveal on the hero. */
+function mountHeroInteract(hero: HTMLElement) {
+  let raf = 0, x = 0, y = 0;
+  const apply = () => { raf = 0; hero.style.setProperty('--mx', x + 'px'); hero.style.setProperty('--my', y + 'px'); };
+  const move = (e: PointerEvent) => {
+    const r = hero.getBoundingClientRect();
+    x = e.clientX - r.left; y = e.clientY - r.top;
+    hero.classList.add('lit');
+    if (!raf) raf = requestAnimationFrame(apply);
+  };
+  const leave = () => hero.classList.remove('lit');
+  hero.addEventListener('pointermove', move);
+  hero.addEventListener('pointerleave', leave);
+  cleanup.push(() => { hero.removeEventListener('pointermove', move); hero.removeEventListener('pointerleave', leave); if (raf) cancelAnimationFrame(raf); });
 }
 
 /** Frosted settlement spectrum — a soft blurred histogram that dissolves into the cream. */
@@ -83,7 +104,9 @@ function landingPage() {
   const body = h(`<main class="landing">
     <section class="hero">
       <div class="spectrum" id="spectrum"></div>
+      <div class="beam"></div>
       <pre class="glyphs" id="glyphs" aria-hidden="true"></pre>
+      <pre class="glyphs glyph-reveal" id="glyphs2" aria-hidden="true"></pre>
       <header class="site-head">
         <div class="wrap">
           <a href="#/" class="brand" data-scroll="top">${MARK}<span class="bt"><b>Settled</b><em>Zero-conf settlement</em></span></a>
@@ -156,7 +179,8 @@ function landingPage() {
   </main>`);
   app.replaceChildren(body);
   (body.querySelector('#spectrum') as HTMLElement).innerHTML = spectrum();
-  mountGlyphs(body.querySelector('#glyphs') as HTMLElement);
+  mountGlyphs(body.querySelector('#glyphs') as HTMLElement, body.querySelector('#glyphs2') as HTMLElement);
+  mountHeroInteract(body.querySelector('.hero') as HTMLElement);
 
   // in-page scroll nav (the hash router would otherwise hijack anchors)
   body.querySelectorAll<HTMLElement>('[data-scroll]').forEach((el) => el.addEventListener('click', (e) => {
