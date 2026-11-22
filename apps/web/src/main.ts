@@ -1,8 +1,8 @@
 import QRCode from 'qrcode';
 import './style.css';
 import { broadcast, getAddress, getCoins, getMonitor, getTx, streamTx, type Coin, type Report } from './api';
-import { MERCHANT } from './config';
-import { banner, esc, h, nav, reportCard, short, statePill } from './ui';
+import { BANNER, EXPLORER, MERCHANT, PROOF } from './config';
+import { banner, esc, h, liveChip, nav, reportCard, short, STATE_COPY, statePill, terminal } from './ui';
 import { WizardWallet } from './wallet';
 
 const app = document.getElementById('app')!;
@@ -11,21 +11,152 @@ let cleanup: (() => void)[] = [];
 function shell(active: string, body: HTMLElement) {
   cleanup.forEach((f) => f());
   cleanup = [];
-  app.replaceChildren(banner(), h(`<header><a href="#/" class="logo">Settled</a><span class="tag">Is this BCH payment safe to hand over the goods?</span></header>`), nav(active), body);
+  const chip = liveChip();
+  const header = h(`<header><a href="#/" class="logo"><span class="dot"></span>Settled</a><span class="tag">Is this BCH payment safe to hand over the goods?</span></header>`);
+  header.append(chip);
+  app.replaceChildren(banner(), header, nav(active), body);
+  getMonitor().then((m) => {
+    if (m?.blocks?.pct) chip.innerHTML = `<span class="pulse"></span>mainnet · <b>${m.blocks.pct.coverable}% safe</b>`;
+  }).catch(() => {});
 }
 
-/* ---------- Check a payment ---------- */
-function checkPage(initial?: string) {
-  const body = h(`<main>
-    <section class="hero">
-      <h1>Know when a Bitcoin Cash payment is really safe.</h1>
-      <p>BCH payments are meant to be instant. But a payment funded by a smart contract, or signed the way most dapp connections sign, can still be reversed before it is mined, and no wallet or point-of-sale tells the merchant. Settled checks the payment and its whole unconfirmed history, the same way BCH nodes decide what double-spend proofs can protect.</p>
-      <form id="f"><input id="t" placeholder="Paste a transaction id" spellcheck="false" autocomplete="off"/><button>Check</button></form>
+const isTxid = (v: string) => /^[0-9a-f]{64}$/i.test(v);
+
+/* ============================================================
+   Landing
+   ============================================================ */
+function landingPage() {
+  const body = h(`<main class="landing">
+    <section class="hero-wrap">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow rise rise-1">CHIP-2025-11 · Bitcoin Cash mainnet</span>
+          <h1 class="display rise rise-2">Know the moment a payment is safe to hand over.</h1>
+          <p class="lede rise rise-3">BCH payments feel instant. But a payment funded by a smart contract — or signed the way most dapp wallets sign — can still be reversed before it is mined, and nothing tells the merchant. Settled checks the payment and its whole unconfirmed history, the same way a BCH node decides what double-spend proofs can protect.</p>
+          <form id="hf" class="hero-form rise rise-4"><input id="ht" placeholder="Paste a transaction id to check" spellcheck="false" autocomplete="off"/><button>Check</button></form>
+          <div class="cta-row rise rise-5">
+            <a class="btn btn-signal" href="#/pay">Try the demo checkout →</a>
+            <a class="btn btn-ghost" href="#/monitor">See the network live</a>
+          </div>
+        </div>
+        <div class="verdict-demo rise rise-3" id="vd"></div>
+      </div>
     </section>
-    <div id="out"></div>
-    <section id="stats" class="card stats"></section>
+
+    <section class="stat-band">
+      <div class="section-head"><span class="eyebrow">Right now on mainnet</span><h2>How much of Bitcoin Cash is actually zero-conf safe?</h2></div>
+      <div id="statbody" class="muted">Reading the latest blocks…</div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="eyebrow">The gap</span><h2>Zero-conf only holds when the network can raise a double-spend proof.</h2><p>Three things break that today — and no wallet or point-of-sale says so.</p></div>
+      <div class="step-grid">
+        <div class="step rise"><span class="n">01</span><h3>Less than half are protectable</h3><p>A majority of BCH transactions spend a contract or non-standard output, which no double-spend proof can cover.</p></div>
+        <div class="step rise"><span class="n">02</span><h3>Every WizardConnect payment is unprovable</h3><p>The protocol requires signing with SIGHASH_UTXOS, which BCHN's dsproof code does not support. The score is 0, always.</p></div>
+        <div class="step rise"><span class="n">03</span><h3>Nobody tells the merchant</h3><p>Wallets and terminals flash "received" the instant a payment lands — whether or not it can actually be protected.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="eyebrow">Proof on mainnet · 21 Nov 2026</span><h2>The same wallet paid the same 1,000 sats two ways.</h2><p>Settled called each one correctly, before either was mined.</p></div>
+      <div class="proof-grid" id="proof"></div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="eyebrow">How it decides</span><h2>The same rules a Bitcoin Cash node uses.</h2><p>Settled walks every unconfirmed ancestor and scores each input exactly like BCHN's <code>getdsproofscore</code>.</p></div>
+      <div class="card" style="padding:18px 20px"><table class="rule-table" id="rules"></table></div>
+      <a class="link-arrow" href="#/about">Read the full method <span class="ar">→</span></a>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-cta">
+        <div><h3>Add settlement checks to your checkout.</h3><p>The engine ships as a TypeScript library and a hosted API.</p></div>
+        <div class="cta-row">
+          <a class="btn" href="https://www.npmjs.com/package/settled-core" target="_blank" rel="noopener">npm i settled-core</a>
+          <a class="btn btn-ghost" href="#/check">Check a payment</a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="#/check">Check a payment</a><a href="#/pay">Demo checkout</a><a href="#/merchant">Merchant</a><a href="#/monitor">Network monitor</a><a href="#/about">How it works</a><a href="${BANNER.repo}" target="_blank" rel="noopener">Source</a>
+      </div>
+      <p class="footer-meta">Settled · CHIP-2025-11 reference implementation · BCH BLAZE 2026</p>
+    </footer>
   </main>`);
   shell('#/', body);
+
+  // Hero verdict demo
+  body.querySelector('#vd')!.append(
+    terminal('received', 'OK TO HAND OVER', `${statePill('received')} <span class="score">score 1.00</span>`, { live: true }),
+  );
+
+  // Hero form → deep link
+  body.querySelector('#hf')!.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const v = (body.querySelector('#ht') as HTMLInputElement).value.trim();
+    if (isTxid(v)) location.hash = `#/tx/${v}`;
+    else location.hash = '#/check';
+  });
+
+  // Live stats
+  getMonitor().then((m) => {
+    const b = m?.blocks;
+    const el = body.querySelector('#statbody')!;
+    if (!b?.txs) return el.remove();
+    el.replaceChildren(h(`<div>
+      <div class="stat-main"><span class="num"><em>${b.pct.coverable}%</em></span><span class="cap">of transactions in the last ${b.count} blocks could be protected by double-spend proofs.</span></div>
+      <div class="stat-grid">
+        <div><span class="k">${b.pct.nonP2pkh}%</span><span class="v">spend a smart contract or non-standard output — never protectable</span></div>
+        <div><span class="k">${b.pct.utxos}%</span><span class="v">plain payments signed SIGHASH_UTXOS (WizardConnect) — no proof possible</span></div>
+        <div><span class="k">${b.pct.weak}%</span><span class="v">weak signatures (ANYONECANPAY or not SIGHASH_ALL)</span></div>
+      </div>
+      <a class="link-arrow" href="#/monitor" style="margin-top:20px">Open the network monitor <span class="ar">→</span></a>
+    </div>`));
+  }).catch(() => body.querySelector('#statbody')?.remove());
+
+  // Proof comparison
+  const proofCard = (p: typeof PROOF.wizard | typeof PROOF.normal) => h(`<div class="proof ${p.state}">
+    <div class="ptop">
+      <p class="how">${esc(p.how)}</p>
+      <div class="big-pill">${p.state === 'pending' ? 'WAIT' : 'OK TO HAND OVER'}</div>
+      <p class="pline">${esc(p.line)}</p>
+    </div>
+    <div class="pmeta">
+      <div class="r"><span class="lbl">Verdict</span><span class="val">${STATE_COPY[p.state].label} · score ${p.score}</span></div>
+      <div class="r"><span class="lbl">Signature</span><span class="val">${esc(p.sighash)}</span></div>
+      <div class="r"><span class="lbl">Txid</span><a class="val" href="${EXPLORER}${p.txid}" target="_blank" rel="noopener">${short(p.txid)}</a></div>
+    </div>
+  </div>`);
+  body.querySelector('#proof')!.append(proofCard(PROOF.wizard), proofCard(PROOF.normal));
+
+  // Decision rules
+  const rules: [string, string, Report['state']][] = [
+    ['Spends a contract / non-P2PKH output', '0', 'pending'],
+    ['Signed SIGHASH_UTXOS (WizardConnect, many token wallets)', '0', 'pending'],
+    ['A double-spend proof already exists', '0', 'pending'],
+    ['Independent servers disagree it is in the mempool', '0', 'pending'],
+    ['ANYONECANPAY, or not SIGHASH_ALL', '0.25', 'pending'],
+    ['More than 1,000 unconfirmed ancestors', '0.25', 'pending'],
+    ['None of the above', '1', 'received'],
+    ['In a block (10+ blocks = settled)', '1', 'confirmed'],
+  ];
+  body.querySelector('#rules')!.innerHTML =
+    `<thead><tr><th>Finding anywhere in the unconfirmed history</th><th>Score</th><th>State</th></tr></thead><tbody>${rules
+      .map(([f, s, st]) => `<tr><td>${esc(f)}</td><td class="sc">${s}</td><td>${statePill(st)}</td></tr>`).join('')}</tbody>`;
+}
+
+/* ============================================================
+   Check a payment (tool)
+   ============================================================ */
+function checkPage(initial?: string) {
+  const body = h(`<main>
+    <div class="page-head">
+      <h1>Check a payment</h1>
+      <p>Paste any BCH transaction id. You get the state, a plain-language reason for every problem, the unconfirmed ancestor tree, and what each independent server sees. It updates live until the payment settles.</p>
+    </div>
+    <form id="f" class="checkbar"><input id="t" placeholder="Paste a transaction id" spellcheck="false" autocomplete="off"/><button>Check</button></form>
+    <div id="out"></div>
+  </main>`);
+  shell('#/check', body);
   const out = body.querySelector('#out')!;
   const run = async (txid: string) => {
     out.replaceChildren(h('<p class="muted">Checking the payment and its unconfirmed history…</p>'));
@@ -42,41 +173,33 @@ function checkPage(initial?: string) {
   body.querySelector('form')!.addEventListener('submit', (e) => {
     e.preventDefault();
     const v = (body.querySelector('#t') as HTMLInputElement).value.trim();
-    if (/^[0-9a-f]{64}$/i.test(v)) { location.hash = `#/tx/${v}`; } else out.replaceChildren(h('<p class="err">That is not a transaction id (64 hex characters).</p>'));
+    if (isTxid(v)) { location.hash = `#/tx/${v}`; } else out.replaceChildren(h('<p class="err">That is not a transaction id (64 hex characters).</p>'));
   });
   if (initial) { (body.querySelector('#t') as HTMLInputElement).value = initial; run(initial); }
-  miniStats(body.querySelector('#stats')!);
 }
 
-async function miniStats(el: Element) {
-  try {
-    const m = await getMonitor();
-    if (!m.blocks.txs) return el.remove();
-    el.replaceChildren(h(`<div><h3>Right now on BCH mainnet</h3>
-      <div class="big"><b>${m.blocks.pct.coverable}%</b><span>of transactions in the last ${m.blocks.count} blocks could be protected by double-spend proofs</span></div>
-      <div class="row"><div><b>${m.blocks.pct.nonP2pkh}%</b> spend a smart contract or non-standard output</div><div><b>${m.blocks.pct.utxos}%</b> are plain payments signed with SIGHASH_UTXOS</div></div>
-      <a href="#/monitor">Open the network monitor →</a></div>`));
-  } catch { el.remove(); }
-}
-
-/* ---------- Demo checkout ---------- */
+/* ============================================================
+   Demo checkout
+   ============================================================ */
 function payPage() {
   const amount = 1000;
   const body = h(`<main>
+    <div class="page-head">
+      <h1>Demo checkout</h1>
+      <p>A real mainnet payment of ${amount.toLocaleString()} sats (about $0.002) to the demo merchant. Pay it two ways and watch what the merchant terminal would show for each.</p>
+    </div>
+    ${MERCHANT ? '' : '<p class="err">Demo merchant address not configured.</p>'}
     <section class="card">
-      <h2>Demo checkout: pay ${amount.toLocaleString()} sats</h2>
-      <p class="muted">A real mainnet payment to the demo merchant (about $0.002). Pick how you pay and watch what the merchant would see.</p>
-      ${MERCHANT ? '' : '<p class="err">Demo merchant address not configured.</p>'}
       <div class="two">
         <div class="opt">
-          <h3>A. Scan with any BCH wallet</h3>
-          <p class="small">A normal wallet send is signed SIGHASH_ALL, which BCH nodes can protect with double-spend proofs.</p>
+          <h3>A · Scan with any BCH wallet</h3>
+          <p class="small muted">A normal wallet send is signed SIGHASH_ALL, which BCH nodes can protect with double-spend proofs.</p>
           <canvas id="qr"></canvas>
           <p class="small"><code id="uri"></code></p>
         </div>
         <div class="opt">
-          <h3>B. Connect a wallet (WizardConnect)</h3>
-          <p class="small">Cashonize, Paytaca or Selene. Settled picks only coins that are safe to spend, then asks your wallet to sign.</p>
+          <h3>B · Connect a wallet (WizardConnect)</h3>
+          <p class="small muted">Cashonize, Paytaca or Selene. Settled picks only coins that are safe to spend, then asks your wallet to sign.</p>
           <button id="wc">Connect wallet</button>
           <div id="wcbox"></div>
         </div>
@@ -166,16 +289,22 @@ function coinTable(coins: Coin[]): HTMLElement {
 /** What a merchant terminal shows. */
 function merchantScreen(r: Report): HTMLElement {
   const big = { pending: 'WAIT', received: 'OK TO HAND OVER', confirmed: 'CONFIRMED', settled: 'SETTLED', unknown: '…' }[r.state];
-  return h(`<section class="terminal ${r.state}"><div class="t1">${big}</div><div class="t2">${statePill(r.state)}</div></section>`);
+  return terminal(r.state, big, statePill(r.state), { live: true });
 }
 
-/* ---------- Merchant dashboard ---------- */
+/* ============================================================
+   Merchant dashboard
+   ============================================================ */
 function merchantPage() {
   const q = new URLSearchParams(location.hash.split('?')[1] ?? '');
   const addr = q.get('address') ?? MERCHANT;
-  const body = h(`<main><section class="card"><h2>Merchant dashboard</h2>
-    <form id="f"><input id="a" value="${esc(addr)}" placeholder="Your BCH address" spellcheck="false"/><button>Watch</button></form>
-    <div id="list"></div></section></main>`);
+  const body = h(`<main>
+    <div class="page-head"><h1>Merchant dashboard</h1><p>Every payment to an address, with its live settlement state and the reason behind it.</p></div>
+    <section class="card">
+      <form id="f" class="checkbar"><input id="a" value="${esc(addr)}" placeholder="Your BCH address" spellcheck="false"/><button>Watch</button></form>
+      <div id="list"></div>
+    </section>
+  </main>`);
   shell('#/merchant', body);
   const list = body.querySelector('#list')!;
   const load = async (a: string) => {
@@ -193,9 +322,14 @@ function merchantPage() {
   if (addr) { load(addr); const t = setInterval(() => load(addr), 5000); cleanup.push(() => clearInterval(t)); }
 }
 
-/* ---------- Network monitor ---------- */
+/* ============================================================
+   Network monitor
+   ============================================================ */
 async function monitorPage() {
-  const body = h('<main><section class="card"><h2>Network monitor</h2><div id="m" class="muted">Loading…</div></section></main>');
+  const body = h(`<main>
+    <div class="page-head"><h1>Network monitor</h1><p>How much of Bitcoin Cash traffic is zero-conf safe, block by block, plus a live mempool sample and the double-spend proofs active right now.</p></div>
+    <section class="card"><div id="m" class="muted">Loading…</div></section>
+  </main>`);
   shell('#/monitor', body);
   const el = body.querySelector('#m')!;
   const load = async () => {
@@ -222,9 +356,13 @@ async function monitorPage() {
   cleanup.push(() => clearInterval(t));
 }
 
+/* ============================================================
+   How it works
+   ============================================================ */
 function aboutPage() {
-  const body = h(`<main><section class="card prose">
-    <h2>How Settled decides</h2>
+  const body = h(`<main>
+    <div class="page-head"><h1>How Settled decides</h1></div>
+    <section class="card prose">
     <p>BCH nodes can warn the network when someone tries to spend the same coins twice (double-spend proofs). That protection only exists when <b>every</b> input of the payment, and of every unconfirmed transaction it depends on, spends a plain P2PKH output with a SIGHASH_ALL signature. Settled walks that whole history and applies the same rules as Bitcoin Cash Node's <code>getdsproofscore</code>:</p>
     <ul>
       <li><b>Received</b> (score 1): every input protectable, no double-spend proof, all servers agree.</li>
@@ -244,11 +382,12 @@ function route() {
   const hash = location.hash || '#/';
   const m = hash.match(/^#\/tx\/([0-9a-f]{64})/i);
   if (m) return checkPage(m[1]);
+  if (hash.startsWith('#/check')) return checkPage();
   if (hash.startsWith('#/pay')) return payPage();
   if (hash.startsWith('#/merchant')) return merchantPage();
   if (hash.startsWith('#/monitor')) return monitorPage();
   if (hash.startsWith('#/about')) return aboutPage();
-  return checkPage();
+  return landingPage();
 }
 window.addEventListener('hashchange', route);
 route();

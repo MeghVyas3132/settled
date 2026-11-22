@@ -21,21 +21,34 @@ export function banner(): HTMLElement {
   const donation = BANNER.donation
     ? `<span class="don">Donate / vote (CashTokens): <code>${esc(BANNER.donation)}</code></span>` : '';
   return h(`<div class="banner">
-    <strong>BCH BLAZE 2026 entry</strong>
+    <strong>BCH BLAZE 2026</strong>
     <a href="${BANNER.slides}" target="_blank" rel="noopener">Presentation</a>
     <a href="${BANNER.repo}" target="_blank" rel="noopener">Source code</a>
     ${donation}
-    <span class="muted">Built from scratch during BLAZE (14–22 Nov 2026)</span>
+    <span class="muted">Built from scratch during BLAZE · 14–22 Nov 2026</span>
   </div>`);
 }
 
+/** Header logo + live mainnet chip. The chip's number is filled asynchronously. */
+export function liveChip(): HTMLElement {
+  return h(`<span class="live-chip"><span class="pulse"></span>BCH mainnet · <b>live</b></span>`);
+}
+
 export function nav(active: string): HTMLElement {
-  const items = [['#/', 'Check a payment'], ['#/pay', 'Demo checkout'], ['#/merchant', 'Merchant'], ['#/monitor', 'Network monitor'], ['#/about', 'How it works']];
+  const items = [['#/check', 'Check a payment'], ['#/pay', 'Demo checkout'], ['#/merchant', 'Merchant'], ['#/monitor', 'Network monitor'], ['#/about', 'How it works']];
   return h(`<nav>${items.map(([href, label]) => `<a href="${href}" class="${href === active ? 'on' : ''}">${label}</a>`).join('')}</nav>`);
 }
 
 export function statePill(s: State): string {
   return `<span class="pill ${s}">${STATE_COPY[s].label}</span>`;
+}
+
+/** The signature component: a merchant terminal showing a verdict. */
+export function terminal(state: State, big: string, subHtml = '', opts: { live?: boolean; bezel?: string } = {}): HTMLElement {
+  return h(`<section class="terminal ${state}${opts.live ? ' live' : ''}">
+    <div class="bezel"><span class="led"></span>${esc(opts.bezel ?? 'Merchant terminal')}</div>
+    <div class="screen"><div class="t1">${big}</div>${subHtml ? `<div class="t2">${subHtml}</div>` : ''}</div>
+  </section>`);
 }
 
 /** Full report card: state, plain-language reasons, ancestor tree, server views. */
@@ -59,7 +72,7 @@ export function reportCard(r: Report): HTMLElement {
         ? `<ul class="reasons">${[...new Map(bm.reasons.map((x) => [x.code, x])).values()].map((x) => `<li><b>${esc(x.code)}</b>: ${esc(x.message)}</li>`).join('')}</ul>`
         : '<p class="small ok">Every input was protectable by double-spend proofs (judged from its own inputs).</p>'}</div>` : '';
   return h(`<section class="card report ${r.state}">
-    <div class="head">${statePill(r.state)} ${r.confirmations ? '' : `<span class="score">protection score ${r.score}</span>`} ${r.confirmations ? `<span>${r.confirmations} confirmation${r.confirmations > 1 ? 's' : ''}</span>` : ''}</div>
+    <div class="head">${statePill(r.state)} ${r.confirmations ? '' : `<span class="score">protection score ${r.score}</span>`} ${r.confirmations ? `<span class="score">${r.confirmations} confirmation${r.confirmations > 1 ? 's' : ''}</span>` : ''}</div>
     <p class="hint">${copy.hint}</p>${before}
     <p class="small">Transaction <a href="${EXPLORER}${r.txid}" target="_blank" rel="noopener"><code>${esc(r.txid)}</code></a></p>
     ${reasonHtml}${tree}${servers}
