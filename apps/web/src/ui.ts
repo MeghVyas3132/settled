@@ -18,7 +18,7 @@ export const STATE_COPY: Record<State, { label: string; hint: string }> = {
 };
 
 /** Electric-blue dot mark. */
-export const MARK = `<svg class="mark" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#2d33f2"/><circle cx="10" cy="10" r="3.1" fill="#fff"/></svg>`;
+export const MARK = `<svg class="mark" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#9b87f5"/><circle cx="10" cy="10" r="3.1" fill="#fff"/></svg>`;
 
 export function nav(active: string): HTMLElement {
   const items = [['#/check', 'Check'], ['#/merchant', 'Merchant'], ['#/monitor', 'Network monitor'], ['#/about', 'How it works']];

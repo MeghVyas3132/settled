@@ -41,7 +41,7 @@ function isoBox(gx: number, gy: number, hgt: number, o: { cx: number; cy: number
   const p = (dx: number, dy: number, dz: number): [number, number] => { const [x, y] = isoPt(gx + dx, gy + dy, o.cx, o.cy, o.tw, o.th); return [x, y - dz]; };
   const t = [p(-0.5, -0.5, hgt), p(0.5, -0.5, hgt), p(0.5, 0.5, hgt), p(-0.5, 0.5, hgt)];
   const bFront = p(0.5, 0.5, 0), bRight = p(0.5, -0.5, 0), bLeft = p(-0.5, 0.5, 0), c = p(0, 0, hgt);
-  const st = dark ? '#ffffff' : accent ? '#2d33f2' : '#20242b', sw = accent ? 1.6 : 1.1;
+  const st = dark ? '#ffffff' : accent ? '#9b87f5' : '#20242b', sw = accent ? 1.6 : 1.1;
   const fL = dark ? 'none' : '#ecedf1', fR = dark ? 'none' : '#f5f6f3', fT = dark ? 'none' : '#fff';
   const poly = (pts: [number, number][]) => pts.map((a) => `${a[0].toFixed(1)},${a[1].toFixed(1)}`).join(' ');
   return `<polygon points="${poly([t[3], t[2], bFront, bLeft])}" fill="${fL}" stroke="${st}" stroke-width="${sw}"/>`
@@ -62,7 +62,7 @@ function isoScene(dark = false): string {
   const tc = (gx: number, gy: number, hz: number): [number, number] => { const [x, y] = isoPt(gx, gy, o.cx, o.cy, o.tw, o.th); return [x, y - hz]; };
   const c1 = tc(1, 1, 56), c2 = tc(3, 1, 36), c3 = tc(1, 3, 36), c4 = tc(3, 3, 46);
   const line = (a: [number, number], b: [number, number]) => `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"/>`;
-  const conn = `<g stroke="${dark ? '#ffffff' : '#2d33f2'}" stroke-width="1.3" stroke-dasharray="3 5" opacity="0.55">${line(c1, c2)}${line(c1, c3)}${line(c1, c4)}</g>`;
+  const conn = `<g stroke="${dark ? '#ffffff' : '#9b87f5'}" stroke-width="1.3" stroke-dasharray="3 5" opacity="0.55">${line(c1, c2)}${line(c1, c3)}${line(c1, c4)}</g>`;
   const boxes = isoBox(1, 1, 56, o, true, '#1f9d63', dark) + isoBox(3, 1, 36, o, false, '#1f9d63', dark) + isoBox(1, 3, 36, o, false, '#c16a2a', dark) + isoBox(3, 3, 46, o, false, '#1f9d63', dark);
   return `<svg class="iso" viewBox="0 0 720 440" fill="none" aria-hidden="true"><g stroke="${dark ? 'rgba(255,255,255,0.16)' : '#dcdcd6'}" stroke-width="1">${grid}</g>${conn}${boxes}</svg>`;
 }
@@ -74,7 +74,7 @@ function icoCoil(): string {
   return `<svg viewBox="0 0 120 120" fill="none" stroke="#20242b" stroke-width="1.4" aria-hidden="true">${e}</svg>`;
 }
 function icoOrbit(): string {
-  return `<svg viewBox="0 0 120 120" fill="none" stroke="#20242b" stroke-width="1.4" aria-hidden="true"><circle cx="60" cy="58" r="23"/><ellipse cx="60" cy="58" rx="52" ry="17" transform="rotate(-23 60 58)"/><circle cx="60" cy="58" r="3" fill="#2d33f2" stroke="none"/></svg>`;
+  return `<svg viewBox="0 0 120 120" fill="none" stroke="#20242b" stroke-width="1.4" aria-hidden="true"><circle cx="60" cy="58" r="23"/><ellipse cx="60" cy="58" rx="52" ry="17" transform="rotate(-23 60 58)"/><circle cx="60" cy="58" r="3" fill="#9b87f5" stroke="none"/></svg>`;
 }
 function icoCubes(): string {
   const o = { cx: 60, cy: 44, tw: 48, th: 24 };
@@ -86,7 +86,7 @@ function icoTree(): string {
   return `<svg class="ico" viewBox="0 0 120 120" fill="none" stroke="#20242b" stroke-width="1.4" aria-hidden="true">
     <path d="M60 24 L34 58 M60 24 L86 58 M34 64 L22 96 M34 64 L46 96 M86 64 L74 96 M86 64 L98 96"/>
     <circle cx="34" cy="60" r="6"/><circle cx="86" cy="60" r="6"/><circle cx="22" cy="100" r="5"/><circle cx="46" cy="100" r="5"/><circle cx="74" cy="100" r="5"/><circle cx="98" cy="100" r="5"/>
-    <circle cx="60" cy="22" r="7" fill="#2d33f2" stroke="none"/></svg>`;
+    <circle cx="60" cy="22" r="7" fill="#9b87f5" stroke="none"/></svg>`;
 }
 
 /** Card line-art: a radial scoring burst (4-point star of dots). */
@@ -100,14 +100,14 @@ function icoBurst(): string {
       d += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${s.toFixed(1)}"/>`;
     }
   }
-  return `<svg class="ico" viewBox="0 0 120 120" fill="#20242b" aria-hidden="true">${d}<circle cx="60" cy="60" r="2.6" fill="#2d33f2"/></svg>`;
+  return `<svg class="ico" viewBox="0 0 120 120" fill="#20242b" aria-hidden="true">${d}<circle cx="60" cy="60" r="2.6" fill="#9b87f5"/></svg>`;
 }
 
 /** Card line-art: concentric verdict rings. */
 function icoRings(): string {
   return `<svg class="ico" viewBox="0 0 120 120" fill="none" stroke="#20242b" stroke-width="1.3" aria-hidden="true">
     <circle cx="60" cy="60" r="11"/><circle cx="60" cy="60" r="23" opacity="0.7"/><circle cx="60" cy="60" r="35" opacity="0.45"/><circle cx="60" cy="60" r="47" opacity="0.24"/>
-    <circle cx="60" cy="60" r="4.5" fill="#2d33f2" stroke="none"/></svg>`;
+    <circle cx="60" cy="60" r="4.5" fill="#9b87f5" stroke="none"/></svg>`;
 }
 
 /** GSAP + Lenis smooth scroll and scroll reveals. Lazy-loaded; torn down on route change. */
