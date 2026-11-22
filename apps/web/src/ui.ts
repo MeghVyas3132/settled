@@ -29,9 +29,9 @@ export function banner(): HTMLElement {
   </div>`);
 }
 
-/** Header logo + live mainnet chip. The chip's number is filled asynchronously. */
+/** Header live mainnet chip. The number is filled asynchronously. */
 export function liveChip(): HTMLElement {
-  return h(`<span class="live-chip"><span class="pulse"></span>BCH mainnet · <b>live</b></span>`);
+  return h(`<span class="live-chip"><span class="pulse"></span>reading mainnet</span>`);
 }
 
 export function nav(active: string): HTMLElement {
