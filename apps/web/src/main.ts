@@ -146,26 +146,30 @@ async function mountScroll(root: HTMLElement) {
 function landingPage() {
   runCleanup();
   const body = h(`<main class="landing">
-    <section class="hero gridbg">
-      <header class="site-head">
-        <a href="#/" class="brand" data-scroll="top">${MARK}<b>Settled</b></a>
-        <nav class="site-nav"><a data-scroll="how">How it works</a><a data-scroll="proof">Proof</a><a data-scroll="dev">Developers</a></nav>
-        <span class="sp"></span>
-        <a class="btn open-app" href="#/check">Open the app</a>
-      </header>
-      <div class="hero-grid">
-        <div class="hero-copy">
-          <span class="kicker">[ CHIP-2025-11 · Bitcoin Cash ]</span>
-          <h1>Settlement certainty for Bitcoin Cash.</h1>
-          <p class="hero-sub">Know the moment a zero-confirmation payment is really safe to hand over the goods.</p>
-          <div class="hero-cta">
-            <a class="btn" href="#/check">Launch the app</a>
-            <button class="btn-ghost" data-scroll="how">See how it works</button>
-          </div>
-          <span class="hero-note" id="note"><span class="dot"></span>Reading mainnet…</span>
-        </div>
-        <div class="hero-art">${isoScene()}</div>
+    <header class="pill-nav">
+      <nav class="pillbar">
+        <a class="pill-brand" data-scroll="top">${MARK}Settled</a>
+        <span class="pill-div"></span>
+        <a data-scroll="how">How it works</a><a data-scroll="proof">Proof</a><a data-scroll="dev">Developers</a>
+      </nav>
+      <a class="pill-cta" href="#/check" aria-label="Open the app" title="Open the app">↗</a>
+    </header>
+
+    <section class="hero-floor">
+      <div class="hero-grad"></div>
+      <div class="wordmark">settled</div>
+      <div class="marquee"><div class="mq-track">${Array.from({ length: 2 }, () => '<span>Built at BCH BLAZE 2026<i class="star">✳</i></span><span>CHIP-2025-11 reference implementation<i class="star">✳</i></span><span>Bitcoin Cash mainnet<i class="star">✳</i></span>').join('')}</div></div>
+    </section>
+
+    <section class="pitch gridbg">
+      <span class="kicker">[ Zero-conf settlement · CHIP-2025-11 ]</span>
+      <h1>“Paid” isn't “settled”. Know the exact moment it is.</h1>
+      <p class="pitch-sub">Settled checks a Bitcoin Cash payment and its whole unconfirmed history against the network's own rules, and tells the merchant when it's genuinely safe to hand over the goods.</p>
+      <div class="hero-cta">
+        <a class="btn" href="#/check">Launch the app</a>
+        <button class="btn-ghost" data-scroll="how">See how it works</button>
       </div>
+      <span class="hero-note" id="note"><span class="dot"></span>Reading mainnet…</span>
     </section>
 
     <section class="block capsec" id="how">
