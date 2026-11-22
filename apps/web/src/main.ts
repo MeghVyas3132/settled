@@ -33,114 +33,96 @@ function appShell(active: string, body: HTMLElement) {
 
 const isTxid = (v: string) => /^[0-9a-f]{64}$/i.test(v);
 
-/** 1-bit ordered dithering (Bayer 8x8) painted onto a canvas, scaled up for chunky pixels. */
-const BAYER8 = [
-  0, 48, 12, 60, 3, 51, 15, 63, 32, 16, 44, 28, 35, 19, 47, 31,
-  8, 56, 4, 52, 11, 59, 7, 55, 40, 24, 36, 20, 43, 27, 39, 23,
-  2, 50, 14, 62, 1, 49, 13, 61, 34, 18, 46, 30, 33, 17, 45, 29,
-  10, 58, 6, 54, 9, 57, 5, 53, 42, 26, 38, 22, 41, 25, 37, 21,
-];
+/* ---------- line-art SVG graphics (blueprint / isometric) ---------- */
+const isoPt = (gx: number, gy: number, cx: number, cy: number, tw: number, th: number): [number, number] =>
+  [cx + (gx - gy) * tw / 2, cy + (gx + gy) * th / 2];
 
-/** Sparse dotted band (the green accent): densest left, trailing off to the right. */
-function stripField(u: number, v: number): number {
-  const vwin = Math.sin(Math.PI * Math.min(Math.max(v, 0), 1));
-  return ((0.5 - u) * 1.3 + 0.18 * Math.sin(u * 26) + 0.1) * (0.4 + 0.6 * vwin);
+function isoBox(gx: number, gy: number, hgt: number, o: { cx: number; cy: number; tw: number; th: number }, accent: boolean, dot: string): string {
+  const p = (dx: number, dy: number, dz: number): [number, number] => { const [x, y] = isoPt(gx + dx, gy + dy, o.cx, o.cy, o.tw, o.th); return [x, y - dz]; };
+  const t = [p(-0.5, -0.5, hgt), p(0.5, -0.5, hgt), p(0.5, 0.5, hgt), p(-0.5, 0.5, hgt)];
+  const bFront = p(0.5, 0.5, 0), bRight = p(0.5, -0.5, 0), bLeft = p(-0.5, 0.5, 0), c = p(0, 0, hgt);
+  const st = accent ? '#2d33f2' : '#20242b', sw = accent ? 1.6 : 1.1;
+  const poly = (pts: [number, number][]) => pts.map((a) => `${a[0].toFixed(1)},${a[1].toFixed(1)}`).join(' ');
+  return `<polygon points="${poly([t[3], t[2], bFront, bLeft])}" fill="#ecedf1" stroke="${st}" stroke-width="${sw}"/>`
+    + `<polygon points="${poly([t[1], t[2], bFront, bRight])}" fill="#f5f6f3" stroke="${st}" stroke-width="${sw}"/>`
+    + `<polygon points="${poly(t)}" fill="#fff" stroke="${st}" stroke-width="${sw}"/>`
+    + `<circle cx="${c[0].toFixed(1)}" cy="${(c[1] + 1).toFixed(1)}" r="4" fill="${dot}"/>`;
 }
 
-function paintDither(canvas: HTMLCanvasElement, box: HTMLElement, rgb: [number, number, number], field: (u: number, v: number) => number) {
-  const rect = box.getBoundingClientRect();
-  const cw = Math.max(6, Math.round((rect.width || 900) / 3));
-  const ch = Math.max(6, Math.round((rect.height || 300) / 3));
-  canvas.width = cw; canvas.height = ch;
-  const ctx = canvas.getContext('2d'); if (!ctx) return;
-  const img = ctx.createImageData(cw, ch), [r, g, b] = rgb;
-  for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
-    const th = (BAYER8[(y & 7) * 8 + (x & 7)] + 0.5) / 64;
-    if (field(x / cw, y / ch) > th) {
-      const i = (y * cw + x) * 4;
-      img.data[i] = r; img.data[i + 1] = g; img.data[i + 2] = b; img.data[i + 3] = 255;
+/** Isometric settlement-network graphic — a payment and its ancestors on a grid. */
+function isoScene(): string {
+  const o = { cx: 360, cy: 150, tw: 150, th: 75 }, N = 4;
+  let grid = '';
+  for (let i = 0; i <= N; i++) {
+    const a = isoPt(i, 0, o.cx, o.cy, o.tw, o.th), b = isoPt(i, N, o.cx, o.cy, o.tw, o.th);
+    const c = isoPt(0, i, o.cx, o.cy, o.tw, o.th), d = isoPt(N, i, o.cx, o.cy, o.tw, o.th);
+    grid += `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"/><line x1="${c[0].toFixed(1)}" y1="${c[1].toFixed(1)}" x2="${d[0].toFixed(1)}" y2="${d[1].toFixed(1)}"/>`;
+  }
+  const tc = (gx: number, gy: number, hz: number): [number, number] => { const [x, y] = isoPt(gx, gy, o.cx, o.cy, o.tw, o.th); return [x, y - hz]; };
+  const c1 = tc(1, 1, 56), c2 = tc(3, 1, 36), c3 = tc(1, 3, 36), c4 = tc(3, 3, 46);
+  const line = (a: [number, number], b: [number, number]) => `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"/>`;
+  const conn = `<g stroke="#2d33f2" stroke-width="1.3" stroke-dasharray="3 5" opacity="0.6">${line(c1, c2)}${line(c1, c3)}${line(c1, c4)}</g>`;
+  const boxes = isoBox(1, 1, 56, o, true, '#1f9d63') + isoBox(3, 1, 36, o, false, '#1f9d63') + isoBox(1, 3, 36, o, false, '#c16a2a') + isoBox(3, 3, 46, o, false, '#1f9d63');
+  return `<svg class="iso" viewBox="0 0 720 440" fill="none" aria-hidden="true"><g stroke="#dcdcd6" stroke-width="1">${grid}</g>${conn}${boxes}</svg>`;
+}
+
+/** Card line-art: a small ancestor graph. */
+function icoTree(): string {
+  return `<svg class="ico" viewBox="0 0 120 120" fill="none" stroke="#20242b" stroke-width="1.4" aria-hidden="true">
+    <path d="M60 24 L34 58 M60 24 L86 58 M34 64 L22 96 M34 64 L46 96 M86 64 L74 96 M86 64 L98 96"/>
+    <circle cx="34" cy="60" r="6"/><circle cx="86" cy="60" r="6"/><circle cx="22" cy="100" r="5"/><circle cx="46" cy="100" r="5"/><circle cx="74" cy="100" r="5"/><circle cx="98" cy="100" r="5"/>
+    <circle cx="60" cy="22" r="7" fill="#2d33f2" stroke="none"/></svg>`;
+}
+
+/** Card line-art: a radial scoring burst (4-point star of dots). */
+function icoBurst(): string {
+  let d = '';
+  const cx = 60, cy = 60, rays = 58;
+  for (let i = 0; i < rays; i++) {
+    const a = (i / rays) * Math.PI * 2, star = 0.42 + 0.58 * Math.pow(Math.abs(Math.cos(2 * a)), 1.6);
+    for (let r = 12; r < 52; r += 4.5) {
+      const rr = r * star, x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr, s = 0.6 + (r / 52) * 0.7;
+      d += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${s.toFixed(1)}"/>`;
     }
   }
-  ctx.putImageData(img, 0, 0);
+  return `<svg class="ico" viewBox="0 0 120 120" fill="#20242b" aria-hidden="true">${d}<circle cx="60" cy="60" r="2.6" fill="#2d33f2"/></svg>`;
 }
 
-function mountDither(canvas: HTMLCanvasElement, box: HTMLElement, rgb: [number, number, number], field: (u: number, v: number) => number) {
-  let t = 0;
-  const draw = () => paintDither(canvas, box, rgb, field);
-  requestAnimationFrame(draw);
-  const onResize = () => { clearTimeout(t); t = window.setTimeout(draw, 160); };
-  window.addEventListener('resize', onResize);
-  cleanup.push(() => { window.removeEventListener('resize', onResize); clearTimeout(t); });
+/** Card line-art: concentric verdict rings. */
+function icoRings(): string {
+  return `<svg class="ico" viewBox="0 0 120 120" fill="none" stroke="#20242b" stroke-width="1.3" aria-hidden="true">
+    <circle cx="60" cy="60" r="11"/><circle cx="60" cy="60" r="23" opacity="0.7"/><circle cx="60" cy="60" r="35" opacity="0.45"/><circle cx="60" cy="60" r="47" opacity="0.24"/>
+    <circle cx="60" cy="60" r="4.5" fill="#2d33f2" stroke="none"/></svg>`;
 }
 
-/** Full-bleed divider band: a dense blue dither fading top and bottom. */
-function bandField(u: number, v: number): number {
-  return Math.sin(Math.PI * Math.min(Math.max(v, 0), 1)) * (0.66 + 0.34 * Math.sin(u * 13 + 2)) - 0.08 - u * 0.08;
-}
-
-/** Lazy-loaded electric-blue voxel blob — the 3D hero element. Disposed on route change. */
-async function mount3D(stage: HTMLElement) {
-  const THREE = await import('three');
-  await new Promise((r) => requestAnimationFrame(() => r(null))); // let layout settle so we read the real size
-  const w = stage.clientWidth || 640, hh = stage.clientHeight || 520;
-  const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0xffffff, 7, 16);
-  const camera = new THREE.PerspectiveCamera(42, w / hh, 0.1, 100);
-  camera.position.set(0, 0, 9.4);
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(w, hh);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  stage.appendChild(renderer.domElement);
-
-  scene.add(new THREE.AmbientLight(0xffffff, 0.85));
-  const key = new THREE.DirectionalLight(0xffffff, 2.3); key.position.set(5, 7, 8); scene.add(key);
-  const rim = new THREE.DirectionalLight(0x2d33f2, 1.7); rim.position.set(-7, -3, -5); scene.add(rim);
-
-  const N = 2600;
-  const geo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
-  const mat = new THREE.MeshStandardMaterial({ roughness: 0.42, metalness: 0.08, vertexColors: false });
-  const mesh = new THREE.InstancedMesh(geo, mat, N);
-  const m = new THREE.Matrix4(), pos = new THREE.Vector3(), quat = new THREE.Quaternion(), scl = new THREE.Vector3(), eul = new THREE.Euler(), col = new THREE.Color();
-  for (let i = 0; i < N; i++) {
-    const u = Math.random() * 2 - 1, th = Math.random() * Math.PI * 2, r = Math.cbrt(Math.random());
-    const rr = Math.sqrt(1 - u * u);
-    const bx = rr * Math.cos(th), by = u, bz = rr * Math.sin(th);
-    const rad = (2.5 + 0.5 * Math.sin(bx * 3 + bz * 2) + 0.3 * Math.cos(by * 4)) * r;
-    pos.set(bx * rad, by * rad, bz * rad);
-    const s = 0.55 + Math.random() * 1.0; scl.set(s, s, s);
-    eul.set(Math.random() * 3, Math.random() * 3, Math.random() * 3); quat.setFromEuler(eul);
-    m.compose(pos, quat, scl); mesh.setMatrixAt(i, m);
-    col.setHSL(0.66, 0.92, 0.4 + Math.random() * 0.26); mesh.setColorAt(i, col);
-  }
-  mesh.instanceMatrix.needsUpdate = true;
-  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-  scene.add(mesh);
-
+/** GSAP + Lenis smooth scroll and scroll reveals. Lazy-loaded; torn down on route change. */
+async function mountScroll(root: HTMLElement) {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0, running = true;
-  const onMove = (e: PointerEvent) => { const b = stage.getBoundingClientRect(); tx = (e.clientX - b.left) / b.width - 0.5; ty = (e.clientY - b.top) / b.height - 0.5; };
-  stage.addEventListener('pointermove', onMove);
-  let last = performance.now();
-  const tick = () => {
-    if (!running) return;
-    raf = requestAnimationFrame(tick);
-    const now = performance.now();
-    const dt = Math.min((now - last) / 1000, 0.05); last = now;
-    cx += (tx - cx) * 0.05; cy += (ty - cy) * 0.05;
-    if (!reduce) mesh.rotation.y += dt * 0.14;
-    mesh.rotation.x = cy * 0.5;
-    scene.rotation.y = cx * 0.5;
-    renderer.render(scene, camera);
-  };
-  tick();
-  const onResize = () => { const W = stage.clientWidth, H = stage.clientHeight; if (!W || !H) return; camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H); };
-  window.addEventListener('resize', onResize);
-  cleanup.push(() => {
-    running = false; cancelAnimationFrame(raf);
-    window.removeEventListener('resize', onResize); stage.removeEventListener('pointermove', onMove);
-    geo.dispose(); mat.dispose(); renderer.dispose(); renderer.domElement.remove();
-  });
+  const [gsapMod, stMod, lenisMod] = await Promise.all([import('gsap'), import('gsap/ScrollTrigger'), import('lenis')]);
+  const gsap = gsapMod.default ?? (gsapMod as any).gsap;
+  const ScrollTrigger = (stMod as any).ScrollTrigger ?? stMod.default;
+  const Lenis = lenisMod.default;
+  gsap.registerPlugin(ScrollTrigger);
+
+  const lenis = new Lenis({ duration: 1.05, autoRaf: true });
+  lenis.on('scroll', ScrollTrigger.update);
+
+  if (!reduce) {
+    gsap.utils.toArray<HTMLElement>('[data-rev]').forEach((el) => {
+      gsap.from(el, { opacity: 0, y: 26, duration: 0.7, ease: 'power2.out', scrollTrigger: { trigger: el, start: 'top 88%', once: true } });
+    });
+    root.querySelectorAll<HTMLElement>('[data-rev-group]').forEach((grp) => {
+      gsap.from(grp.children, { opacity: 0, y: 26, duration: 0.55, ease: 'power2.out', stagger: 0.08, scrollTrigger: { trigger: grp, start: 'top 86%', once: true } });
+    });
+  }
+  root.querySelectorAll<HTMLElement>('[data-scroll]').forEach((el) => el.addEventListener('click', (e) => {
+    e.preventDefault();
+    const id = el.dataset.scroll!;
+    if (id === 'top') lenis.scrollTo(0);
+    else { const t = root.querySelector<HTMLElement>('#' + id); if (t) lenis.scrollTo(t, { offset: -16 }); }
+  }));
+  requestAnimationFrame(() => ScrollTrigger.refresh());
+  cleanup.push(() => { ScrollTrigger.getAll().forEach((s: any) => s.kill()); lenis.destroy(); });
 }
 
 /* ============================================================
@@ -149,7 +131,7 @@ async function mount3D(stage: HTMLElement) {
 function landingPage() {
   runCleanup();
   const body = h(`<main class="landing">
-    <section class="hero">
+    <section class="hero gridbg">
       <header class="site-head">
         <a href="#/" class="brand" data-scroll="top">${MARK}<b>Settled</b></a>
         <nav class="site-nav"><a data-scroll="how">How it works</a><a data-scroll="proof">Proof</a><a data-scroll="dev">Developers</a></nav>
@@ -158,84 +140,79 @@ function landingPage() {
       </header>
       <div class="hero-grid">
         <div class="hero-copy">
-          <h1>Settled: settlement certainty for Bitcoin Cash.</h1>
-          <p class="hero-sub">Know the moment a zero-confirmation payment is really safe to hand over.</p>
+          <span class="kicker">[ CHIP-2025-11 · Bitcoin Cash ]</span>
+          <h1>Settlement certainty for Bitcoin Cash.</h1>
+          <p class="hero-sub">Know the moment a zero-confirmation payment is really safe to hand over the goods.</p>
           <div class="hero-cta">
             <a class="btn" href="#/check">Launch the app</a>
             <button class="btn-ghost" data-scroll="how">See how it works</button>
           </div>
           <span class="hero-note" id="note"><span class="dot"></span>Reading mainnet…</span>
         </div>
-        <div class="hero-3d" id="stage"></div>
+        <div class="hero-art">${isoScene()}</div>
       </div>
     </section>
 
-    <section class="band"><canvas id="band"></canvas></section>
-
-    <section class="block" id="how">
-      <h2 class="s-head"><span class="label">How it works:</span> the path a payment takes.</h2>
-      <p class="section-lede">No new trust assumptions. Settled applies the exact test a Bitcoin Cash node applies, across the payment's whole unconfirmed history, and returns a plain verdict that updates live.</p>
-      <ol class="flow">
-        <li><span class="step">01</span><h3>Take the payment</h3><p>Give it a transaction id, or point it at a merchant address to watch.</p></li>
-        <li><span class="step">02</span><h3>Walk the history</h3><p>It follows every unconfirmed ancestor the payment still depends on.</p></li>
-        <li><span class="step">03</span><h3>Score each input</h3><p>Each input is judged exactly like BCHN’s getdsproofscore — can a double-spend proof protect it?</p></li>
-        <li><span class="step">04</span><h3>Return a verdict</h3><p>Pending, Received, Confirmed or Settled — with the reason behind it.</p></li>
-      </ol>
+    <section class="block capsec" id="how">
+      <div class="sec-head" data-rev>
+        <div><span class="kicker">[ How it works ]</span><h2 class="s-head">A verdict you can actually trust.</h2></div>
+        <p class="sec-desc">Settled checks a payment against the network's own rules and answers the one question at the counter: is it safe to hand over the goods yet?</p>
+      </div>
+      <div class="cards" data-rev-group>
+        <article class="card3"><div class="art">${icoTree()}</div><h3>Walk the history</h3><p>It follows every unconfirmed ancestor the payment depends on — not just the payment itself.</p><a class="more" href="#/about">Read more →</a></article>
+        <article class="card3"><div class="art">${icoBurst()}</div><h3>Score every input</h3><p>Each input is graded exactly like a Bitcoin Cash node's getdsproofscore. One weak link pulls the whole payment to pending.</p><a class="more" href="#/about">Read more →</a></article>
+        <article class="card3"><div class="art">${icoRings()}</div><h3>A live verdict</h3><p>Pending, Received, Confirmed or Settled — streamed live, with the plain reason behind it.</p><a class="more" href="#/check">Read more →</a></article>
+      </div>
     </section>
 
-    <section class="block">
-      <h2 class="s-head"><span class="label">The gap:</span> zero-conf only holds when the network can raise a double-spend proof.</h2>
-      <p class="section-lede">That protection needs every input — and every unconfirmed transaction behind it — to spend a plain output with a standard signature. Three things break it today, and nothing at the counter says so.</p>
-      <div class="facts">
-        <div class="fact"><div class="fig bad">51%</div><div><h3>spend a contract or non-standard output</h3><p>A double-spend proof can never cover these, so more than half of mainnet traffic has no zero-conf protection at all.</p></div></div>
-        <div class="fact"><div class="fig">every</div><div><h3>WizardConnect payment is unprovable</h3><p>The protocol requires signing with SIGHASH_UTXOS, which a Bitcoin Cash node cannot build a proof for. The protection score is 0, every time.</p></div></div>
-        <div class="fact"><div class="fig">none</div><div><h3>of today’s wallets warn the merchant</h3><p>Point-of-sale screens show “received” the instant a payment lands, whether or not the network could ever protect it.</p></div></div>
+    <section class="block" id="gap">
+      <div class="sec-head" data-rev>
+        <div><span class="kicker">[ The gap ]</span><h2 class="s-head">Why “instant” usually isn't safe.</h2></div>
+        <p class="sec-desc">Zero-conf only holds when the network can raise a double-spend proof. Three things break that today — and nothing at the counter says so.</p>
+      </div>
+      <div class="facts" data-rev-group>
+        <div class="fact"><div class="fig bad">51%</div><h3>spend a contract or non-standard output</h3><p>A double-spend proof can never cover these, so more than half of mainnet traffic has no zero-conf protection at all.</p></div>
+        <div class="fact"><div class="fig">every</div><h3>WizardConnect payment is unprovable</h3><p>The protocol requires signing with SIGHASH_UTXOS, which a Bitcoin Cash node cannot build a proof for. Score 0, every time.</p></div>
+        <div class="fact"><div class="fig">none</div><h3>of today's wallets warn the merchant</h3><p>Point-of-sale screens show “received” the instant a payment lands, whether or not the network could ever protect it.</p></div>
       </div>
     </section>
 
     <section class="block" id="proof">
-      <h2 class="s-head"><span class="label">On mainnet:</span> the same 1,000 sats, paid two ways.</h2>
-      <p class="section-lede">On 21 November 2026, one wallet paid the demo merchant twice. Settled read each payment before it was mined — one safe to accept, one not.</p>
-      <div class="proof" id="proofgrid"></div>
+      <div class="sec-head" data-rev>
+        <div><span class="kicker">[ On mainnet · 21 Nov 2026 ]</span><h2 class="s-head">The same 1,000 sats, paid two ways.</h2></div>
+        <p class="sec-desc">One wallet paid the demo merchant twice. Settled read each payment before it was mined — one safe to accept, one not.</p>
+      </div>
+      <div class="proof" id="proofgrid" data-rev-group></div>
     </section>
 
-    <section class="block">
-      <h2 class="s-head"><span class="label">The rules:</span> it decides like a Bitcoin Cash node.</h2>
-      <p class="section-lede">Settled walks every unconfirmed ancestor and scores each input exactly like BCHN’s <code>getdsproofscore</code>. Anything the network cannot protect pulls the whole payment to “pending”.</p>
-      <div class="rulebook" id="rules"></div>
+    <section class="block" id="rules-sec">
+      <div class="sec-head" data-rev>
+        <div><span class="kicker">[ The rules ]</span><h2 class="s-head">It decides like a Bitcoin Cash node.</h2></div>
+        <p class="sec-desc">Settled scores each input exactly like BCHN's <code>getdsproofscore</code>. Anything the network cannot protect pulls the whole payment to “pending”.</p>
+      </div>
+      <div class="rulebook" id="rules" data-rev></div>
     </section>
 
-    <section class="block" id="dev">
-      <div class="signoff">
-        <div>
-          <h2><span class="label">For developers:</span> put the settlement check in your own checkout.</h2>
-          <p>The engine ships as a TypeScript library and a hosted API — the same one answering this page.</p>
-        </div>
-        <div class="acts">
-          <div class="cmd">npm i <b>settled-core</b></div>
-          <a class="btn" href="#/check">Launch the app</a>
-          <a class="textlink" href="#/about">Read the method</a>
-        </div>
+    <section class="cta gridbg" id="dev">
+      <div class="cta-inner" data-rev>
+        <span class="kicker">[ Ready when you are ]</span>
+        <h2 class="cta-head">Know when the money is really yours.</h2>
+        <p class="cta-sub">Paste a transaction, run the live demo checkout on mainnet, or drop <code>settled-core</code> into your own point-of-sale.</p>
+        <div class="cta-acts"><a class="btn" href="#/check">Launch the app</a><span class="cmd">npm i <b>settled-core</b></span></div>
       </div>
-      <div class="dither-strip"><canvas id="strip"></canvas></div>
-      <div class="site-footer">
-        <span>Settled — a CHIP-2025-11 reference implementation, built at BCH BLAZE 2026. <a href="${BANNER.slides}" target="_blank" rel="noopener">Presentation</a></span>
-        <div class="links"><a href="#/check">Open the app</a><a href="#/about">How it works</a><a href="${BANNER.repo}" target="_blank" rel="noopener">Source</a><a href="https://www.npmjs.com/package/settled-core" target="_blank" rel="noopener">npm</a></div>
-      </div>
+      <div class="cta-art">${isoScene()}</div>
     </section>
+
+    <footer class="site-footer">
+      <div class="foot-brand"><a href="#/" class="brand" data-scroll="top">${MARK}<b>Settled</b></a><p>A CHIP-2025-11 reference implementation, built at BCH BLAZE 2026.</p></div>
+      <div class="foot-cols">
+        <div><h4>Product</h4><a href="#/check">Check a payment</a><a href="#/pay">Demo checkout</a><a href="#/merchant">Merchant</a><a href="#/monitor">Network monitor</a></div>
+        <div><h4>Resources</h4><a href="#/about">How it works</a><a href="https://www.npmjs.com/package/settled-core" target="_blank" rel="noopener">settled-core · npm</a><a href="${BANNER.repo}" target="_blank" rel="noopener">Source</a><a href="${BANNER.slides}" target="_blank" rel="noopener">Presentation</a></div>
+      </div>
+    </footer>
   </main>`);
   app.replaceChildren(body);
-  mount3D(body.querySelector('#stage') as HTMLElement);
-  mountDither(body.querySelector('#band') as HTMLCanvasElement, body.querySelector('.band') as HTMLElement, [45, 51, 242], bandField);
-  mountDither(body.querySelector('#strip') as HTMLCanvasElement, body.querySelector('.dither-strip') as HTMLElement, [31, 157, 99], stripField);
-
-  // in-page scroll nav (the hash router would otherwise hijack anchors)
-  body.querySelectorAll<HTMLElement>('[data-scroll]').forEach((el) => el.addEventListener('click', (e) => {
-    e.preventDefault();
-    const id = el.dataset.scroll!;
-    if (id === 'top') return window.scrollTo({ top: 0, behavior: 'smooth' });
-    body.querySelector('#' + id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }));
+  mountScroll(body);
 
   // Live mainnet note
   getMonitor().then((m) => {
