@@ -2,24 +2,55 @@ import QRCode from 'qrcode';
 import './style.css';
 import { broadcast, getAddress, getCoins, getMonitor, getTx, streamTx, type Coin, type Report } from './api';
 import { BANNER, EXPLORER, MERCHANT, PROOF } from './config';
-import { esc, h, MARK, nav, reportCard, short, STATE_COPY, statePill, terminal } from './ui';
+import { esc, h, MARK, reportCard, short, STATE_COPY, statePill, terminal } from './ui';
 import { WizardWallet } from './wallet';
 
 const app = document.getElementById('app')!;
 let cleanup: (() => void)[] = [];
+const runCleanup = () => { cleanup.forEach((f) => f()); cleanup = []; };
 
-function shell(active: string, body: HTMLElement) {
-  cleanup.forEach((f) => f());
-  cleanup = [];
-  const top = h(`<div class="topbar">
+/** The app (tool) shell: a sidebar, kept visually separate from the marketing landing. */
+function appShell(active: string, body: HTMLElement) {
+  runCleanup();
+  const items = [['#/check', 'Check a payment'], ['#/pay', 'Demo checkout'], ['#/merchant', 'Merchant'], ['#/monitor', 'Network monitor'], ['#/about', 'How it works']];
+  const sidebar = h(`<aside class="sidebar">
     <a href="#/" class="brand">${MARK}<span class="bt"><b>Settled</b><em>Zero-conf settlement</em></span></a>
-    ${nav(active).outerHTML}
-    <a class="pill-link" href="#/pay">Open the demo</a>
-  </div>`);
-  app.replaceChildren(top, body);
+    <nav>${items.map(([href, label]) => `<a href="${href}" class="${href === active ? 'on' : ''}">${label}</a>`).join('')}</nav>
+    <div class="foot">
+      <span class="stat" id="sstat"><span class="dot"></span>reading mainnet…</span>
+      <a href="#/" class="back">← Back to site</a>
+    </div>
+  </aside>`);
+  const main = h(`<div class="app-main"><div class="inner"></div></div>`);
+  main.querySelector('.inner')!.append(body);
+  const root = h(`<div class="app"></div>`);
+  root.append(sidebar, main);
+  app.replaceChildren(root);
+  getMonitor().then((m) => {
+    if (m?.blocks?.pct) sidebar.querySelector('#sstat')!.innerHTML = `<span class="dot"></span><b>${m.blocks.pct.coverable}%</b>&nbsp;provable now`;
+  }).catch(() => sidebar.querySelector('#sstat')?.remove());
 }
 
 const isTxid = (v: string) => /^[0-9a-f]{64}$/i.test(v);
+
+/** Faint, constantly-shifting ASCII field layered over the hero spectrum. */
+function mountGlyphs(el: HTMLElement) {
+  const cols = 94, rows = 36, charset = 'ABCDEFGHJKLMNPRTUVXYZ0123456789/\\<>=+*{}[]#$%&';
+  const cell = () => (Math.random() < 0.52 ? charset[(Math.random() * charset.length) | 0] : ' ');
+  const grid = Array.from({ length: cols * rows }, cell);
+  const render = () => {
+    let s = '';
+    for (let r = 0; r < rows; r++) s += grid.slice(r * cols, (r + 1) * cols).join('') + '\n';
+    el.textContent = s;
+  };
+  render();
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const t = setInterval(() => {
+    for (let k = 0; k < 55; k++) grid[(Math.random() * grid.length) | 0] = cell();
+    render();
+  }, 120);
+  cleanup.push(() => clearInterval(t));
+}
 
 /** Frosted settlement spectrum — a soft blurred histogram that dissolves into the cream. */
 function spectrum(): string {
@@ -48,15 +79,39 @@ function spectrum(): string {
    Landing
    ============================================================ */
 function landingPage() {
+  runCleanup();
   const body = h(`<main class="landing">
     <section class="hero">
       <div class="spectrum" id="spectrum"></div>
+      <pre class="glyphs" id="glyphs" aria-hidden="true"></pre>
+      <header class="site-head">
+        <div class="wrap">
+          <a href="#/" class="brand" data-scroll="top">${MARK}<span class="bt"><b>Settled</b><em>Zero-conf settlement</em></span></a>
+          <nav class="site-nav"><a data-scroll="how">How it works</a><a data-scroll="proof">Proof</a><a data-scroll="dev">Developers</a></nav>
+          <a class="pill-link" href="#/check">Open the app</a>
+        </div>
+      </header>
       <div class="hero-inner">
         <h1>Certainty for every Bitcoin Cash payment, the instant it arrives.</h1>
         <p class="hero-lede">Settled checks a payment and its whole unconfirmed history against the same rules a Bitcoin Cash node uses, and tells the merchant the moment it is genuinely safe to hand over the goods.</p>
-        <form id="hf" class="hero-form"><input id="ht" placeholder="Paste a transaction id" spellcheck="false" autocomplete="off"/><button>Check</button></form>
+        <div class="hero-cta">
+          <a class="btn" href="#/check">Launch the app</a>
+          <button class="btn-ghost" data-scroll="how">See how it works</button>
+        </div>
         <span class="hero-note" id="note"><span class="dot"></span>Reading mainnet…</span>
       </div>
+      <div class="scroll-cue"><span>scroll</span><span class="ln"></span></div>
+    </section>
+
+    <section class="block" id="how">
+      <h2 class="statement">How Settled reads a payment.</h2>
+      <p class="section-lede">No new trust assumptions. It applies the exact test a Bitcoin Cash node applies, across the payment's whole unconfirmed history, and returns a plain verdict that updates live.</p>
+      <ol class="flow">
+        <li><span class="step">1</span><h3>Take the payment</h3><p>Give it a transaction id, or point it at a merchant address to watch.</p></li>
+        <li><span class="step">2</span><h3>Walk the history</h3><p>It follows every unconfirmed ancestor the payment still depends on.</p></li>
+        <li><span class="step">3</span><h3>Score each input</h3><p>Each input is judged exactly like BCHN’s getdsproofscore — can a double-spend proof protect it?</p></li>
+        <li><span class="step">4</span><h3>Return a verdict</h3><p>Pending, Received, Confirmed or Settled — with the reason behind it.</p></li>
+      </ol>
     </section>
 
     <section class="block">
@@ -69,20 +124,19 @@ function landingPage() {
       </div>
     </section>
 
-    <section class="block">
+    <section class="block" id="proof">
       <h2 class="statement">The same wallet paid the same 1,000 sats two ways.</h2>
       <p class="section-lede">On mainnet, 21 November 2026. Settled read each payment before it was mined — one safe to accept, one not.</p>
-      <div class="proof" id="proof"></div>
+      <div class="proof" id="proofgrid"></div>
     </section>
 
     <section class="block">
       <h2 class="statement">It decides with the same rules a Bitcoin Cash node uses.</h2>
       <p class="section-lede">Settled walks every unconfirmed ancestor and scores each input exactly like BCHN’s <code>getdsproofscore</code>. Anything the network cannot protect pulls the whole payment to “pending”.</p>
       <div class="rulebook" id="rules"></div>
-      <p style="margin-top:30px"><a class="textlink" href="#/about">Read the full method</a></p>
     </section>
 
-    <section class="block">
+    <section class="block" id="dev">
       <div class="signoff">
         <div>
           <h2>Put the settlement check in your own checkout.</h2>
@@ -90,26 +144,27 @@ function landingPage() {
         </div>
         <div class="acts">
           <div class="cmd">npm i <b>settled-core</b></div>
-          <a class="btn" href="#/pay">Open the demo checkout</a>
-          <a class="textlink" href="#/check">Check a payment</a>
+          <a class="btn" href="#/check">Launch the app</a>
+          <a class="textlink" href="#/about">Read the method</a>
         </div>
       </div>
       <div class="site-footer">
         <span>Settled — a CHIP-2025-11 reference implementation, built at BCH BLAZE 2026. <a href="${BANNER.slides}" target="_blank" rel="noopener">Presentation</a></span>
-        <div class="links"><a href="#/check">Check</a><a href="#/pay">Demo</a><a href="#/merchant">Merchant</a><a href="#/monitor">Monitor</a><a href="#/about">How it works</a><a href="${BANNER.repo}" target="_blank" rel="noopener">Source</a></div>
+        <div class="links"><a href="#/check">Open the app</a><a href="#/about">How it works</a><a href="${BANNER.repo}" target="_blank" rel="noopener">Source</a><a href="https://www.npmjs.com/package/settled-core" target="_blank" rel="noopener">npm</a></div>
       </div>
     </section>
   </main>`);
-  shell('#/', body);
+  app.replaceChildren(body);
   (body.querySelector('#spectrum') as HTMLElement).innerHTML = spectrum();
+  mountGlyphs(body.querySelector('#glyphs') as HTMLElement);
 
-  // Hero form → deep link
-  body.querySelector('#hf')!.addEventListener('submit', (e) => {
+  // in-page scroll nav (the hash router would otherwise hijack anchors)
+  body.querySelectorAll<HTMLElement>('[data-scroll]').forEach((el) => el.addEventListener('click', (e) => {
     e.preventDefault();
-    const v = (body.querySelector('#ht') as HTMLInputElement).value.trim();
-    if (isTxid(v)) location.hash = `#/tx/${v}`;
-    else location.hash = '#/check';
-  });
+    const id = el.dataset.scroll!;
+    if (id === 'top') return window.scrollTo({ top: 0, behavior: 'smooth' });
+    body.querySelector('#' + id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
 
   // Live mainnet note
   getMonitor().then((m) => {
@@ -133,7 +188,7 @@ function landingPage() {
         <div class="r"><span>Transaction</span><a class="v" href="${EXPLORER}${p.txid}" target="_blank" rel="noopener">${short(p.txid)}</a></div>
       </div>
     </div>`);
-  body.querySelector('#proof')!.append(
+  body.querySelector('#proofgrid')!.append(
     panel(PROOF.wizard, 'Hold the goods'),
     panel(PROOF.normal, 'Safe to hand over'),
   );
@@ -165,7 +220,7 @@ function checkPage(initial?: string) {
     <form id="f" class="checkbar"><input id="t" placeholder="Paste a transaction id" spellcheck="false" autocomplete="off"/><button>Check</button></form>
     <div id="out"></div>
   </main>`);
-  shell('#/check', body);
+  appShell('#/check', body);
   const out = body.querySelector('#out')!;
   const run = async (txid: string) => {
     out.replaceChildren(h('<p class="muted">Checking the payment and its unconfirmed history…</p>'));
@@ -216,7 +271,7 @@ function payPage() {
     </section>
     <div id="live"></div>
   </main>`);
-  shell('#/pay', body);
+  appShell('#/pay', body);
   const uri = `${MERCHANT}?amount=${(amount / 1e8).toFixed(8)}`;
   body.querySelector('#uri')!.textContent = uri;
   if (MERCHANT) QRCode.toCanvas(body.querySelector('#qr') as HTMLCanvasElement, uri, { width: 200, margin: 1 });
@@ -314,7 +369,7 @@ function merchantPage() {
       <div id="list"></div>
     </section>
   </main>`);
-  shell('#/merchant', body);
+  appShell('#/merchant', body);
   const list = body.querySelector('#list')!;
   const load = async (a: string) => {
     try {
@@ -339,7 +394,7 @@ async function monitorPage() {
     <div class="page-head"><h1>Network monitor</h1><p>How much of Bitcoin Cash traffic is zero-conf safe, block by block, plus a live mempool sample and the double-spend proofs active right now.</p></div>
     <section class="card"><div id="m" class="muted">Loading…</div></section>
   </main>`);
-  shell('#/monitor', body);
+  appShell('#/monitor', body);
   const el = body.querySelector('#m')!;
   const load = async () => {
     const m = await getMonitor();
@@ -384,7 +439,7 @@ function aboutPage() {
     <h3>For developers</h3>
     <p><code>npm install settled-core</code>, or call the API: <code>GET /v1/tx/&lt;txid&gt;</code>, <code>GET /v1/tx/&lt;txid&gt;/stream</code>, <code>POST /v1/watch</code>.</p>
   </section></main>`);
-  shell('#/about', body);
+  appShell('#/about', body);
 }
 
 function route() {
