@@ -2,33 +2,41 @@ import QRCode from 'qrcode';
 import './style.css';
 import { broadcast, getAddress, getCoins, getMonitor, getTx, streamTx, type Coin, type Report } from './api';
 import { BANNER, EXPLORER, MERCHANT, PROOF } from './config';
-import { esc, h, MARK, reportCard, short, STATE_COPY, statePill, terminal } from './ui';
+import { esc, h, reportCard, short, STATE_COPY, statePill, terminal } from './ui';
 import { WizardWallet } from './wallet';
 
 const app = document.getElementById('app')!;
 let cleanup: (() => void)[] = [];
 const runCleanup = () => { cleanup.forEach((f) => f()); cleanup = []; };
 
-/** The app (tool) shell: a sidebar, kept visually separate from the marketing landing. */
+/** Shared shell for Settled payment tools. */
 function appShell(active: string, body: HTMLElement) {
   runCleanup();
-  const items = [['#/check', 'Check a payment'], ['#/pay', 'Demo checkout'], ['#/merchant', 'Merchant'], ['#/monitor', 'Network monitor'], ['#/about', 'How it works']];
-  const sidebar = h(`<aside class="sidebar">
-    <a href="#/" class="brand">${MARK}<b>Settled</b></a>
-    <nav>${items.map(([href, label]) => `<a href="${href}" class="${href === active ? 'on' : ''}">${label}</a>`).join('')}</nav>
-    <div class="foot">
-      <span class="stat" id="sstat"><span class="dot"></span>reading mainnet…</span>
-      <a href="#/" class="back">← Back to site</a>
+  const icons: Record<string, string> = {
+    '#/check': '<circle cx="11" cy="11" r="7.5"/><path d="m16.5 16.5 4 4M8 11l2 2 4-4"/>',
+    '#/pay': '<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 8h8M8 12h8M8 16h4"/>',
+    '#/merchant': '<path d="M3 10h18l-1.5-6h-15L3 10Z"/><path d="M5 10v10h14V10M9 20v-6h6v6M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/>',
+    '#/monitor': '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+    '#/about': '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  };
+  const items = [['#/check', 'Check'], ['#/pay', 'Checkout'], ['#/merchant', 'Merchant'], ['#/monitor', 'Network'], ['#/about', 'How it works']];
+  const header = h(`<header class="app-topbar">
+    <a href="#/" class="brand"><img class="app-logo" src="/settled-logo.png" alt="Settled" /></a>
+    <nav aria-label="Settled tools">${items.map(([href, label]) => `<a href="${href}" class="${href === active ? 'on' : ''}" ${href === active ? 'aria-current="page"' : ''}><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[href]}</svg><span>${label}</span></a>`).join('')}</nav>
+    <div class="topbar-side">
+      <span class="network-status" id="sstat"><span class="dot"></span><span>Reading mainnet</span></span>
+      <a href="#/" class="site-link">Site <span aria-hidden="true">↗</span></a>
     </div>
-  </aside>`);
+  </header>`);
   const main = h(`<div class="app-main"><div class="inner"></div></div>`);
   main.querySelector('.inner')!.append(body);
   const root = h(`<div class="app"></div>`);
-  root.append(sidebar, main);
+  root.append(header, main);
   app.replaceChildren(root);
   getMonitor().then((m) => {
-    if (m?.blocks?.pct) sidebar.querySelector('#sstat')!.innerHTML = `<span class="dot"></span><b>${m.blocks.pct.coverable}%</b>&nbsp;provable now`;
-  }).catch(() => sidebar.querySelector('#sstat')?.remove());
+    const status = header.querySelector('#sstat');
+    if (m?.blocks?.pct && status) status.innerHTML = `<span class="dot"></span><span><b>${m.blocks.pct.coverable}%</b> provable now</span>`;
+  }).catch(() => header.querySelector('#sstat')?.remove());
 }
 
 const isTxid = (v: string) => /^[0-9a-f]{64}$/i.test(v);

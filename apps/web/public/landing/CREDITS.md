@@ -41,21 +41,8 @@ If you want the credit surfaced in the UI rather than only here, this is the str
 
 > Photo by Luis Quintero on Pexels
 
----
 
-## `arm_bones.glb` — provenance NOT established
-
-**Open item before submission.** This is the rigged hand model the hero scene loads
-(`src/scenes/Scene.js`, via `Arm.load`). It arrived with the source project and no
-licence, author or origin is recorded anywhere in this repo.
-
-Until someone states where it came from, treat it as undocumented third-party work:
-ETHGlobal allows open-source assets *with transparency* and disallows pre-event
-project assets ([docs/18](../../../../docs/18-ethglobal-rules.md)), and this file
-cannot currently satisfy either test. Either record the source and licence here, or
-replace the model with one whose licence is known.
-
-`arm.glb` (4.4 MB) was removed: nothing referenced it.
+The hero artwork is an inline SVG created for Settled. The Settled logo is a cropped, transparent-background version of `apps/web/public/settled-logo.png`, sourced from the project logo in `assets/logo.png`.
 
 ---
 

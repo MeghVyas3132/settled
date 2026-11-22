@@ -16,19 +16,7 @@
 		/>
 		<meta name="theme-color" content="#010204" />
 
-		<!--
-			Geist Pixel sets the hero wordmark, Inter italic sets the one on the
-			photo plate, and Lato sets everything else. A <link> rather than the
-			@import Google's own snippet hands out, because an @import inside
-			style.css cannot start downloading until the stylesheet has been
-			fetched and parsed.
-
-			Four faces in total, not the eleven the snippet offers: the page uses
-			Lato regular and one light italic (the headline's third line), one
-			Geist Pixel, and one Inter italic. All three families ride a single
-			request, and the Inter query is narrowed on its optical-size axis
-			as well, since the plate mark is only ever set large.
-		-->
+		<!-- Lato carries the page copy; Geist Pixel and Inter style the closing wordmark and photo plate. -->
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -37,118 +25,75 @@
 		/>
 		<script type="module" crossorigin src="./assets/main-vt5cmNkO.js"></script>
 		<link rel="stylesheet" crossorigin href="./assets/main-CCS0Am-w.css">
+
+		<style>
+			.settled-hero{position:relative;isolation:isolate;min-height:100svh;overflow:hidden;background:#f4f4f2;color:#101115;font-family:Lato,system-ui,sans-serif}
+			.settled-nav{position:absolute;inset:0 0 auto;z-index:5;display:flex;align-items:center;gap:2rem;padding:1.3rem clamp(1.25rem,3vw,3rem)}
+			.settled-brand{display:inline-flex;align-items:center;gap:.65rem;color:#101115;text-decoration:none;font-size:.88rem;font-weight:700;letter-spacing:-.02em}
+			.settled-brand img{width:2.35rem;height:2.35rem;object-fit:contain}
+			.settled-navlinks{display:flex;align-items:center;gap:clamp(1rem,2.5vw,2.2rem);margin-left:auto}
+			.settled-navlinks a{color:#30323a;text-decoration:none;font:500 .67rem ui-monospace,SFMono-Regular,monospace;letter-spacing:.11em;text-transform:uppercase}
+			.settled-navlinks a:hover{color:#1f4fd8}
+			.settled-navlinks .settled-open{padding:.8rem 1rem;background:#1f4fd8;color:#fff;letter-spacing:.08em}
+			.settled-navlinks .settled-open:hover{background:#1740b8;color:#fff}
+			.settled-hero-copy{position:relative;z-index:2;width:min(42rem,54vw);padding:clamp(9rem,22vh,14rem) 0 10rem clamp(1.25rem,3vw,3rem)}
+			.settled-kicker{margin:0 0 1.4rem;color:#1f4fd8;font:600 .7rem ui-monospace,SFMono-Regular,monospace;letter-spacing:.16em;text-transform:uppercase}
+			.settled-hero-copy h1{max-width:9ch;margin:0;color:#101115;font-size:clamp(3.5rem,8.3vw,7.8rem);font-weight:400;letter-spacing:-.075em;line-height:.88}
+			.settled-hero-copy p{max-width:27rem;margin:1.5rem 0 0;color:#42444c;font-size:clamp(1rem,1.35vw,1.2rem);line-height:1.55}
+			.settled-hero-link{display:inline-flex;align-items:center;gap:.65rem;margin-top:1.5rem;color:#1740b8;text-decoration:none;font:600 .72rem ui-monospace,SFMono-Regular,monospace;letter-spacing:.12em;text-transform:uppercase}
+			.settled-hero-link:hover{text-decoration:underline;text-underline-offset:.35rem}
+			.settled-pixels{position:absolute;z-index:1;right:-2vw;bottom:0;width:min(77vw,1040px);height:72%;overflow:visible;pointer-events:none}
+			.settled-pixel-caption{position:absolute;z-index:2;right:clamp(1.25rem,4vw,4rem);bottom:clamp(2.5rem,7vh,5.5rem);width:min(15rem,27vw);color:#f4f4f2;font-size:.78rem;line-height:1.45}
+			.settled-pixel-caption strong{display:block;margin-bottom:.4rem;color:#aabfff;font:600 .63rem ui-monospace,SFMono-Regular,monospace;letter-spacing:.13em;text-transform:uppercase}
+			@media(max-width:700px){.settled-nav{gap:.75rem;padding-top:1rem}.settled-brand{font-size:.8rem}.settled-brand img{width:2rem;height:2rem}.settled-navlinks{gap:.75rem}.settled-navlinks a{font-size:.58rem;letter-spacing:.04em}.settled-navlinks a[data-hide-mobile]{display:none}.settled-navlinks .settled-open{padding:.7rem .72rem}.settled-hero-copy{width:100%;padding:8.4rem 1.25rem 0}.settled-hero-copy h1{max-width:8ch;font-size:clamp(3.5rem,15vw,6rem)}.settled-hero-copy p{max-width:22rem}.settled-pixels{right:-20vw;width:125vw;height:46%;bottom:0}.settled-pixel-caption{right:1.25rem;bottom:1.4rem;width:10.5rem;font-size:.67rem}.settled-hero{min-height:92svh}}
+		</style>
 	</head>
 	<body class="bg-ghost text-ink">
-		<!--
-			The hero owns the WebGL scene. The canvas mounts into #app, which is
-			absolute inside this section, so it is clipped here and scrolls away
-			instead of floating over everything below. The camera only tracks the
-			cursor while the cursor is inside this section, and the render loop
-			stops when the section leaves the viewport.
-		-->
-		<section id="hero" class="theme-dark relative h-lvh w-full overflow-hidden bg-void text-ghost">
-			<div id="app" class="absolute inset-0"></div>
-
-			<!-- Keeps the copy legible where the beam crosses it. See .hero-scrim. -->
-			<div class="hero-scrim pointer-events-none absolute inset-0"></div>
-
-			<!-- pb clears the marquee strip pinned to the section's foot. -->
-			<div
-				class="pointer-events-none relative z-10 flex h-full flex-col justify-between p-6 pb-20 md:p-10 md:pb-24"
-			>
-				<!-- The wordmark stays as readable text while its light effect runs. -->
-				<header class="flex justify-center">
-					<div data-ascii="settled" role="img" aria-label="Settled"></div>
-				</header>
-
-				<!--
-					The headline is the Filament effect's target: one element per line,
-					marked [data-line], which the effect splits into characters and then
-					re-draws in WebGL so each one catches like a lamp along a wall.
-					Nesting a differently coloured element inside a line would have no
-					effect while it plays — the shader takes one colour from the <h1> —
-					so the third line is set apart by weight and style instead.
-				-->
-				<div class="max-w-3xl">
-					<!-- w-fit so the effect's canvas is sized to the longest line rather
-					     than to the measure, which keeps the halo's 1em of room around the
-					     text instead of out at the column's right edge. -->
-					<h1
-						data-lamps
-						class="w-fit text-4xl leading-[1.0] text-ghost md:text-5xl"
-					>
-						<span data-line class="block">Know when a BCH</span>
-						<span data-line class="block">payment is really</span>
-						<span data-line class="block font-light italic"
-							>safe to hand over.</span
-						>
-					</h1>
-					<!-- 26rem rather than the 32rem the measure would allow: past that
-					     the last few words run into the beam. Measured over the
-					     paragraph's own box, 32rem puts 29% of the background above
-					     luma 110 and peaks at 201; 26rem is 15% and peaks at 159, and
-					     costs no extra line. -->
-					<p
-						data-fade="1"
-						class="mt-6 max-w-[26rem] text-sm leading-relaxed text-ghost/80"
-					>
-						Settled checks a payment and its whole unconfirmed history using the same rules Bitcoin Cash Node uses. It tells the merchant whether to wait, hand over the goods, or confirm the payment first.
-					</p>
+		<section id="hero" class="settled-hero">
+			<nav class="settled-nav" aria-label="Main navigation">
+				<a class="settled-brand" href="#hero"><img src="../settled-logo.png" alt="" /><span>Settled</span></a>
+				<div class="settled-navlinks">
+					<a data-hide-mobile href="#overview">About</a>
+					<a data-hide-mobile href="#components">How it works</a>
+					<a data-hide-mobile href="#difference">Proof</a>
+					<a class="settled-open" href="../#/check" target="_top">Open Settled <span aria-hidden="true">↗</span></a>
 				</div>
-
-				<!--
-					The pipeline belongs with the copy's left edge, and down here it is
-					also off the beam: measured against the art, this band sits at mean
-					luma 20 where the old slot under the paragraph was at 124.
-				-->
-				<div
-					class="flex items-end justify-between font-mono text-xs uppercase tracking-[0.2em] text-ghost/35"
-				>
-					<div class="space-y-2">
-						<p data-fade="2" class="text-ghost/50">
-							Resolve <span class="text-ghost/25">&middot;</span> Assess
-							<span class="text-ghost/25">&middot;</span> Evidence
-							<span class="text-ghost/25">&middot;</span> Respond
-						</p>
-						<span class="block">Payment safety, explained live</span>
-					</div>
-					<span>Scroll &darr;</span>
-				</div>
+			</nav>
+			<div class="settled-hero-copy">
+				<p class="settled-kicker">Bitcoin Cash · CHIP-2025-11</p>
+				<h1>Paid should feel certain.</h1>
+				<p>Know when a Bitcoin Cash payment is really safe to hand over. Settled checks the whole unconfirmed history and explains what the network can protect.</p>
+				<a class="settled-hero-link" href="#overview">Meet Settled <span aria-hidden="true">↓</span></a>
 			</div>
-
-			<!--
-				The facts behind a payment verdict, running along the foot of the
-				scene. Every term here is named and defined somewhere below, which
-				is why the strip is hidden from assistive technology rather than
-				duplicated into it: it is the vocabulary of the page shown as a
-				list of parts, not a second copy of the content.
-
-				Two identical groups, with the track translated by half its own
-				width, so the loop closes on itself with no seam. See .marquee.
-			-->
-			<div
-				data-inview
-				aria-hidden="true"
-				class="marquee pointer-events-none absolute inset-x-0 bottom-0 z-10 border-t border-ghost/10 py-3.5"
-			>
-				<div
-					class="marquee__track font-mono text-[0.65rem] uppercase tracking-[0.28em] text-ghost/35"
-				>
-					<span class="marquee__group"
-						>Bitcoin Cash &middot; Zero confirmation &middot; Double-spend proofs
-						&middot; P2PKH inputs &middot; SIGHASH_ALL &middot; Ancestor history
-						&middot; Pending &middot; Received &middot; Confirmed &middot; Settled &middot;
-					</span>
-					<span class="marquee__group"
-						>Bitcoin Cash &middot; Zero confirmation &middot; Double-spend proofs
-						&middot; P2PKH inputs &middot; SIGHASH_ALL &middot; Ancestor history
-						&middot; Pending &middot; Received &middot; Confirmed &middot; Settled &middot;
-					</span>
-				</div>
-			</div>
+			<svg class="settled-pixels" viewBox="0 0 1000 570" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">
+				<path fill="#111216" d="M0 390h44v-24h42v24h54v-42h42v-30h48v30h42v-60h48v-36h44v36h46v-58h42v-32h50v32h40v-42h42v-36h44v36h46v-62h48v-46h52v24h42v-42h44v-26h48v26h44v-18h50v18h44v292h-38v28h-48v36h-56v30h-64v-26h-52v48h-56v24h-62v-24h-54v40h-56v-30h-50v-28h-58v-28h-56v24h-56v-22h-58v30h-48v-24h-58v-30h-50v-24h-44v24H0z"/>
+				<path fill="#1f4fd8" d="M610 310h24v-24h24v24h24v24h-24v24h-24v-24h-24z M786 218h20v-20h20v20h20v20h-20v20h-20v-20h-20z"/>
+				<g fill="#f4f4f2"><path d="M66 348h20v20H66zM232 286h22v22h-22zM426 226h18v18h-18zM540 178h20v20h-20zM712 132h18v18h-18zM866 70h20v20h-20zM924 154h20v20h-20zM330 452h22v22h-22zM500 480h20v20h-20zM670 452h22v22h-22z"/></g>
+				<g fill="#1f4fd8"><path d="M8 322h16v16H8zM176 250h16v16h-16zM372 182h16v16h-16zM474 126h16v16h-16zM650 88h16v16h-16zM836 36h16v16h-16zM958 104h16v16h-16zM280 418h16v16h-16zM592 530h16v16h-16z"/></g>
+			</svg>
+			<p class="settled-pixel-caption"><strong>Payment safety, in plain language</strong>Pending. Received. Confirmed. Settled. Know what each state means before you hand over the goods.</p>
 		</section>
 
 		<main class="relative isolate">
+			<section id="overview" class="band border-b border-rule py-20 md:py-28">
+				<div class="rail">
+					<div class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-16">
+						<aside>
+							<p class="font-mono text-xs uppercase tracking-[0.2em] text-ink/60">Settled / Bitcoin Cash</p>
+							<p class="mt-3 border-t border-rule pt-3 text-xs leading-relaxed text-ink/60">Clear payment safety for merchants and wallets.</p>
+						</aside>
+						<div>
+							<h2 class="max-w-4xl text-3xl leading-tight text-balance md:text-5xl">Know whether a BCH payment is safe to accept.</h2>
+							<p class="mt-6 max-w-3xl text-base leading-relaxed text-pretty text-ink/70">Settled checks the payment and its unconfirmed history against Bitcoin Cash Node’s double-spend proof rules. It gives merchants a live verdict, the reason behind it, and a clear signal for when to hand over the goods.</p>
+							<div class="mt-10 grid gap-6 border-t border-rule sm:grid-cols-3 sm:divide-x sm:divide-rule">
+								<div class="py-5 sm:pr-8"><p class="font-mono text-xs uppercase tracking-[0.2em] text-ink/60">Trace</p><p class="mt-3 text-sm leading-relaxed text-ink/65">Follow every unconfirmed ancestor the payment depends on.</p></div>
+								<div class="border-t border-rule py-5 sm:border-t-0 sm:px-8"><p class="font-mono text-xs uppercase tracking-[0.2em] text-ink/60">Explain</p><p class="mt-3 text-sm leading-relaxed text-ink/65">See which input, signature, or network signal determines the verdict.</p></div>
+								<div class="border-t border-rule py-5 sm:border-t-0 sm:pl-8"><p class="font-mono text-xs uppercase tracking-[0.2em] text-ink/60">Decide</p><p class="mt-3 text-sm leading-relaxed text-ink/65">Know when to wait, when it is safe to hand over, and when it is confirmed.</p></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
 			<section id="why" class="band border-b border-rule py-20 md:py-28"><div class="rail"><div class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-16"><aside><p class="font-mono text-xs uppercase tracking-[0.2em] text-ink/60">01 / Why Settled exists</p><p class="mt-3 border-t border-rule pt-3 text-xs leading-relaxed text-ink/60">A wallet can say “received” before the network can protect that payment.</p></aside><div><h2 class="max-w-4xl text-3xl leading-tight text-balance md:text-5xl">A payment can arrive instantly and still be unsafe.</h2><p class="mt-6 max-w-3xl text-base leading-relaxed text-pretty text-ink/70">Zero-confirmation payments are safe only when every input in the payment and its unconfirmed history can be covered by a double-spend proof. Settled traces that history, checks each input, and tells the merchant what the network can actually protect.</p><div class="mt-10 grid gap-4 md:grid-cols-3"><article data-reveal class="border border-rule bg-white p-6"><p class="font-mono text-xs uppercase tracking-[0.18em] text-ink/60">The blind spot</p><h3 class="mt-4 text-lg">“Received” hides the risk.</h3><p class="mt-3 text-sm leading-relaxed text-ink/65">A payment can show up in a wallet even when its inputs cannot be protected against a double spend.</p></article><article data-reveal style="--reveal-at: 90ms" class="border border-rule bg-white p-6"><p class="font-mono text-xs uppercase tracking-[0.18em] text-ink/60">The answer</p><h3 class="mt-4 text-lg">Check the full history.</h3><p class="mt-3 text-sm leading-relaxed text-ink/65">Settled follows every unconfirmed ancestor and explains which network rule determines the verdict.</p></article><figure data-reveal style="--reveal-at: 180ms" class="relative min-h-64 overflow-hidden bg-void"><img src="./embers-1600.avif" alt="Abstract light streaks against a dark background." class="absolute inset-0 h-full w-full object-cover opacity-80" /><div class="absolute inset-0 bg-gradient-to-tr from-void/85 via-void/20 to-flag/20"></div><figcaption class="absolute inset-x-0 bottom-0 p-6 text-ghost"><span class="font-mono text-xs uppercase tracking-[0.18em] text-ghost/65">A clearer payment signal</span><span class="mt-2 block text-xl">One verdict. Every input behind it.</span></figcaption></figure></div></div></div></div></section>
 
 			<!--
