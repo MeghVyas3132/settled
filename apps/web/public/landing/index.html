@@ -16,7 +16,7 @@
 		/>
 		<meta name="theme-color" content="#010204" />
 
-		<!-- Lato carries the page copy; Geist Pixel and Inter style the closing wordmark and photo plate. -->
+		<!-- Lato carries the page copy; Geist Pixel and Inter style the closing wordmark. -->
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -45,6 +45,8 @@
 			.settled-pixels{position:absolute;z-index:1;right:-2vw;bottom:0;width:min(77vw,1040px);height:72%;overflow:visible;pointer-events:none}
 			.settled-pixel-caption{position:absolute;z-index:2;right:clamp(1.25rem,4vw,4rem);bottom:clamp(2.5rem,7vh,5.5rem);width:min(15rem,27vw);color:#f4f4f2;font-size:.78rem;line-height:1.45}
 			.settled-pixel-caption strong{display:block;margin-bottom:.4rem;color:#aabfff;font:600 .63rem ui-monospace,SFMono-Regular,monospace;letter-spacing:.13em;text-transform:uppercase}
+			#components .pixel-shape{transition:filter .24s ease}
+			@media(hover:hover){#components [data-shape-card]:hover .pixel-shape,#components [data-shape-card]:focus-within .pixel-shape{filter:brightness(0) saturate(100%) invert(26%) sepia(93%) saturate(2678%) hue-rotate(215deg) brightness(91%) contrast(95%)}}
 			@media(max-width:700px){.settled-nav{gap:.75rem;padding-top:1rem}.settled-brand{font-size:.8rem}.settled-brand img{width:2rem;height:2rem}.settled-navlinks{gap:.75rem}.settled-navlinks a{font-size:.58rem;letter-spacing:.04em}.settled-navlinks a[data-hide-mobile]{display:none}.settled-navlinks .settled-open{padding:.7rem .72rem}.settled-hero-copy{width:100%;padding:8.4rem 1.25rem 0}.settled-hero-copy h1{max-width:8ch;font-size:clamp(3.5rem,15vw,6rem)}.settled-hero-copy p{max-width:22rem}.settled-pixels{right:-20vw;width:125vw;height:46%;bottom:0}.settled-pixel-caption{right:1.25rem;bottom:1.4rem;width:10.5rem;font-size:.67rem}.settled-hero{min-height:92svh}}
 		</style>
 	</head>
@@ -66,10 +68,166 @@
 				<a class="settled-hero-link" href="#overview">Meet Settled <span aria-hidden="true">↓</span></a>
 			</div>
 			<svg class="settled-pixels" viewBox="0 0 1000 570" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">
-				<path fill="#111216" d="M0 390h44v-24h42v24h54v-42h42v-30h48v30h42v-60h48v-36h44v36h46v-58h42v-32h50v32h40v-42h42v-36h44v36h46v-62h48v-46h52v24h42v-42h44v-26h48v26h44v-18h50v18h44v292h-38v28h-48v36h-56v30h-64v-26h-52v48h-56v24h-62v-24h-54v40h-56v-30h-50v-28h-58v-28h-56v24h-56v-22h-58v30h-48v-24h-58v-30h-50v-24h-44v24H0z"/>
-				<path fill="#1f4fd8" d="M610 310h24v-24h24v24h24v24h-24v24h-24v-24h-24z M786 218h20v-20h20v20h20v20h-20v20h-20v-20h-20z"/>
-				<g fill="#f4f4f2"><path d="M66 348h20v20H66zM232 286h22v22h-22zM426 226h18v18h-18zM540 178h20v20h-20zM712 132h18v18h-18zM866 70h20v20h-20zM924 154h20v20h-20zM330 452h22v22h-22zM500 480h20v20h-20zM670 452h22v22h-22z"/></g>
-				<g fill="#1f4fd8"><path d="M8 322h16v16H8zM176 250h16v16h-16zM372 182h16v16h-16zM474 126h16v16h-16zM650 88h16v16h-16zM836 36h16v16h-16zM958 104h16v16h-16zM280 418h16v16h-16zM592 530h16v16h-16z"/></g>
+				<defs>
+					<linearGradient id="pixel-fade" x1="0" y1="0" x2="1" y2="1">
+						<stop offset="0%" stop-color="white" stop-opacity="0"/>
+						<stop offset="34%" stop-color="white" stop-opacity=".08"/>
+						<stop offset="68%" stop-color="white" stop-opacity=".9"/>
+						<stop offset="100%" stop-color="white" stop-opacity="1"/>
+					</linearGradient>
+					<mask id="pixel-fade-mask"><rect width="100%" height="100%" fill="url(#pixel-fade)"/></mask>
+				</defs>
+				<g mask="url(#pixel-fade-mask)">
+				<rect x="875" y="46" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="910" y="46" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="945" y="46" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="840" y="81" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="875" y="81" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="81" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="81" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="805" y="116" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="840" y="116" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="875" y="116" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="116" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="116" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="770" y="151" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="805" y="151" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="840" y="151" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="875" y="151" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="151" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="151" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="735" y="186" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="770" y="186" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="805" y="186" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="840" y="186" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="875" y="186" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="186" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="186" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="700" y="221" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="735" y="221" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="770" y="221" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="805" y="221" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="840" y="221" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="875" y="221" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="221" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="221" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="665" y="256" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="700" y="256" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="735" y="256" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="770" y="256" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="805" y="256" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="840" y="256" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="875" y="256" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="256" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="256" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="630" y="291" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="665" y="291" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="700" y="291" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="735" y="291" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="770" y="291" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="805" y="291" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="840" y="291" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="875" y="291" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="291" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="291" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="595" y="326" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="630" y="326" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="665" y="326" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="700" y="326" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="735" y="326" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="770" y="326" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="805" y="326" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="840" y="326" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="875" y="326" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="326" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="326" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="560" y="361" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="595" y="361" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="630" y="361" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="665" y="361" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="700" y="361" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="735" y="361" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="770" y="361" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="805" y="361" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="840" y="361" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="875" y="361" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="361" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="361" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="525" y="396" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="560" y="396" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="595" y="396" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="630" y="396" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="665" y="396" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="700" y="396" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="735" y="396" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="770" y="396" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="805" y="396" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="840" y="396" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="875" y="396" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="396" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="396" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="490" y="431" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="525" y="431" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="560" y="431" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="595" y="431" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="630" y="431" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="665" y="431" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="700" y="431" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="735" y="431" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="770" y="431" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="805" y="431" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="840" y="431" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="875" y="431" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="431" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="431" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="455" y="466" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="490" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="525" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="560" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="595" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="630" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="665" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="700" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="735" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="770" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="805" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="840" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="875" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="466" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="466" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="420" y="501" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="455" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="490" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="525" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="560" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="595" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="630" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="665" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="700" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="735" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="770" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="805" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="840" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="875" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="910" y="501" width="29" height="29" fill="#111216" stroke="none" stroke-width="0"/>
+				<rect x="945" y="501" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="420" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="455" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="490" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="525" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="560" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="595" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="630" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="665" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="700" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="735" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="770" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="805" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="840" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="875" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="910" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				<rect x="945" y="536" width="29" height="29" fill="#111216" stroke="#1f4fd8" stroke-width="2"/>
+				</g>
 			</svg>
 			<p class="settled-pixel-caption"><strong>Payment safety, in plain language</strong>Pending. Received. Confirmed. Settled. Know what each state means before you hand over the goods.</p>
 		</section>
@@ -94,19 +252,14 @@
 					</div>
 				</div>
 			</section>
-			<section id="why" class="band border-b border-rule py-20 md:py-28"><div class="rail"><div class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-16"><aside><p class="font-mono text-xs uppercase tracking-[0.2em] text-ink/60">01 / Why Settled exists</p><p class="mt-3 border-t border-rule pt-3 text-xs leading-relaxed text-ink/60">A wallet can say “received” before the network can protect that payment.</p></aside><div><h2 class="max-w-4xl text-3xl leading-tight text-balance md:text-5xl">A payment can arrive instantly and still be unsafe.</h2><p class="mt-6 max-w-3xl text-base leading-relaxed text-pretty text-ink/70">Zero-confirmation payments are safe only when every input in the payment and its unconfirmed history can be covered by a double-spend proof. Settled traces that history, checks each input, and tells the merchant what the network can actually protect.</p><div class="mt-10 grid gap-4 md:grid-cols-3"><article data-reveal class="border border-rule bg-white p-6"><p class="font-mono text-xs uppercase tracking-[0.18em] text-ink/60">The blind spot</p><h3 class="mt-4 text-lg">“Received” hides the risk.</h3><p class="mt-3 text-sm leading-relaxed text-ink/65">A payment can show up in a wallet even when its inputs cannot be protected against a double spend.</p></article><article data-reveal style="--reveal-at: 90ms" class="border border-rule bg-white p-6"><p class="font-mono text-xs uppercase tracking-[0.18em] text-ink/60">The answer</p><h3 class="mt-4 text-lg">Check the full history.</h3><p class="mt-3 text-sm leading-relaxed text-ink/65">Settled follows every unconfirmed ancestor and explains which network rule determines the verdict.</p></article><figure data-reveal style="--reveal-at: 180ms" class="relative min-h-64 overflow-hidden bg-void"><img src="./embers-1600.avif" alt="Abstract light streaks against a dark background." class="absolute inset-0 h-full w-full object-cover opacity-80" /><div class="absolute inset-0 bg-gradient-to-tr from-void/85 via-void/20 to-flag/20"></div><figcaption class="absolute inset-x-0 bottom-0 p-6 text-ghost"><span class="font-mono text-xs uppercase tracking-[0.18em] text-ghost/65">A clearer payment signal</span><span class="mt-2 block text-xl">One verdict. Every input behind it.</span></figcaption></figure></div></div></div></div></section>
+			<section id="why" class="band border-b border-rule py-20 md:py-28"><div class="rail"><div class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-16"><aside><p class="font-mono text-xs uppercase tracking-[0.2em] text-ink/60">01 / Why Settled exists</p><p class="mt-3 border-t border-rule pt-3 text-xs leading-relaxed text-ink/60">A wallet can say “received” before the network can protect that payment.</p></aside><div><h2 class="max-w-4xl text-3xl leading-tight text-balance md:text-5xl">A payment can arrive instantly and still be unsafe.</h2><p class="mt-6 max-w-3xl text-base leading-relaxed text-pretty text-ink/70">Zero-confirmation payments are safe only when every input in the payment and its unconfirmed history can be covered by a double-spend proof. Settled traces that history, checks each input, and tells the merchant what the network can actually protect.</p><div class="mt-10 grid gap-4 md:grid-cols-3"><article data-reveal class="border border-rule bg-white p-6"><p class="font-mono text-xs uppercase tracking-[0.18em] text-ink/60">The blind spot</p><h3 class="mt-4 text-lg">“Received” hides the risk.</h3><p class="mt-3 text-sm leading-relaxed text-ink/65">A payment can show up in a wallet even when its inputs cannot be protected against a double spend.</p></article><article data-reveal style="--reveal-at: 90ms" class="border border-rule bg-white p-6"><p class="font-mono text-xs uppercase tracking-[0.18em] text-ink/60">The answer</p><h3 class="mt-4 text-lg">Check the full history.</h3><p class="mt-3 text-sm leading-relaxed text-ink/65">Settled follows every unconfirmed ancestor and explains which network rule determines the verdict.</p></article><figure data-reveal style="--reveal-at: 180ms; background:#1f4fd8; color:#fff" class="relative flex min-h-64 flex-col justify-end overflow-hidden p-6"><span class="font-mono text-xs uppercase tracking-[0.18em] text-white/70">A clearer payment signal</span><span class="mt-2 block text-xl">One verdict. Every input behind it.</span></figure></div></div></div></div></section>
 
-			<!--
-				The incident band, and the one content section that stays dark. The
-				drop to --color-void is the flip, and .band-incident's ember cast is
-				the same light as the photographs either side of it — both only ever
-				appear under the section about something going wrong. See style.css.
-			-->
+			<!-- The incident band is the one content section that stays dark. -->
 			<section id="without-settled" class="theme-dark band band-incident border-b border-ghost/10 bg-void py-20 text-ghost md:py-28"><div class="rail"><div class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-16"><aside><p class="font-mono text-xs uppercase tracking-[0.2em] text-ghost/55">02 / The zero-conf gap</p><p class="mt-3 border-t border-ghost/15 pt-3 text-xs leading-relaxed text-ghost/55">Not every instant payment can be protected.</p></aside><div><h2 class="max-w-3xl text-3xl leading-tight text-balance md:text-5xl">“Paid” and “safe to hand over” are different states.</h2><p class="mt-5 max-w-3xl text-sm leading-relaxed text-pretty text-ghost/65">Bitcoin Cash nodes can relay double-spend proofs for eligible transactions. Contract outputs and certain signature types cannot be covered by those proofs, yet ordinary payment screens do not explain the difference.</p><div class="mt-10 grid gap-4 md:grid-cols-3"><article data-reveal class="border border-ghost/15 bg-ghost/[0.04] p-6"><p class="font-mono text-xs uppercase tracking-[0.16em] text-ghost/55">Mainnet traffic</p><p class="mt-4 text-4xl">&gt;50%</p><p class="mt-3 text-sm text-ghost/65">Spends contract or non-standard outputs that a double-spend proof cannot cover.</p></article><article data-reveal style="--reveal-at: 90ms" class="border border-ghost/15 bg-ghost/[0.04] p-6"><p class="font-mono text-xs uppercase tracking-[0.16em] text-ghost/55">WizardConnect</p><p class="mt-4 text-4xl">0</p><p class="mt-3 text-sm text-ghost/65">Proof score for payments signed with SIGHASH_UTXOS.</p></article><article data-reveal style="--reveal-at: 180ms" class="border border-ghost/15 bg-ghost/[0.04] p-6"><p class="font-mono text-xs uppercase tracking-[0.16em] text-ghost/55">At the counter</p><p class="mt-4 text-4xl">No signal</p><p class="mt-3 text-sm text-ghost/65">Settled surfaces the reason and tells the merchant to wait when proof is impossible.</p></article></div><div class="mt-10 grid gap-4 md:grid-cols-3"><article data-reveal class="border-l border-ghost/25 pl-5"><p class="font-mono text-xs uppercase tracking-[0.16em] text-ghost/55">Check</p><p class="mt-3 text-sm leading-relaxed text-ghost/75">Follow the payment and each unconfirmed transaction it depends on.</p></article><article data-reveal style="--reveal-at: 140ms" class="border-l border-ghost/25 pl-5"><p class="font-mono text-xs uppercase tracking-[0.16em] text-ghost/55">Explain</p><p class="mt-3 text-sm leading-relaxed text-ghost/75">Show the exact input, signature type, proof, or server disagreement that affects safety.</p></article><article data-reveal style="--reveal-at: 280ms" class="border-l border-ghost pl-5"><p class="font-mono text-xs uppercase tracking-[0.16em] text-ghost/60">Hand over</p><p class="mt-3 text-lg leading-relaxed text-ghost">When every input is protectable and servers agree, Settled reports <strong class="font-normal">Received — safe to hand over.</strong></p></article></div><p class="mt-6 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-ghost/55">Implementation of CHIP-2025-11 · Bitcoin Cash mainnet</p></div></div></div></section>
 
 			<section id="components" class="band border-b border-rule py-20 md:py-28"><div class="rail"><div class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-16"><aside><p class="font-mono text-xs uppercase tracking-[0.2em] text-ink/60">03 / How Settled works</p><p class="mt-3 border-t border-rule pt-3 text-xs leading-relaxed text-ink/60">Trace the history, score inputs, stream a clear verdict.</p></aside><div><h2 class="max-w-3xl text-3xl leading-tight text-balance md:text-5xl">From an unconfirmed payment to a reasoned verdict.</h2><p class="mt-5 max-w-3xl text-sm leading-relaxed text-pretty text-ink/70">Settled walks the payment’s unconfirmed ancestry, applies Bitcoin Cash Node’s proof rules to every input, and cross-checks what independent servers see.</p><div data-inview data-beams="src-routes>resolve, src-controls>resolve, src-policy>assess, resolve>assess, assess>evidence, evidence>respond, respond>out-cap, respond>out-borrow, respond>out-grade" data-beams-narrow="resolve>assess, assess>evidence, evidence>respond" class="mt-12 grid gap-y-10 lg:grid-cols-[11rem_minmax(0,1fr)_11rem] lg:gap-x-8"><div class="flex flex-col"><p class="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-ink/60">Payment history</p><div class="mt-4 flex flex-1 flex-col justify-center gap-2"><span class="beam-pin" data-beam-node="src-routes">Transaction inputs</span><span class="beam-pin" data-beam-node="src-controls">Unconfirmed ancestors</span><span class="beam-pin" data-beam-node="src-policy">Independent server views</span></div></div><div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4"><article class="beam-node" data-beam-node="resolve" data-shape-card><div class="text-center font-mono text-[0.65rem] uppercase tracking-[0.18em] text-ink/60">Trace</div><div data-pixel-shape="sphere" class="mx-auto my-5 h-20 w-full max-w-[9rem]"></div><h3 class="text-center text-base">Walk every ancestor</h3></article><article class="beam-node" data-beam-node="assess" data-shape-card><div class="text-center font-mono text-[0.65rem] uppercase tracking-[0.18em] text-ink/60">Score</div><div data-pixel-shape="cube" class="mx-auto my-5 h-20 w-full max-w-[9rem]"></div><h3 class="text-center text-base">Apply BCHN rules</h3></article><article class="beam-node" data-beam-node="evidence" data-shape-card><div class="text-center font-mono text-[0.65rem] uppercase tracking-[0.18em] text-ink/60">Explain</div><div data-pixel-shape="octahedron" class="mx-auto my-5 h-20 w-full max-w-[9rem]"></div><h3 class="text-center text-base">Show each reason</h3></article><article class="beam-node" data-beam-node="respond" data-shape-card><div class="text-center font-mono text-[0.65rem] uppercase tracking-[0.18em] text-ink/60">Stream</div><div data-pixel-shape="frustum" class="mx-auto my-5 h-20 w-full max-w-[9rem]"></div><h3 class="text-center text-base">Update until settled</h3></article></div><div class="flex flex-col"><p class="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-ink/60">Merchant decision</p><div class="mt-4 flex flex-1 flex-col justify-center gap-2"><span class="beam-pin" data-beam-node="out-cap">Pending — wait</span><span class="beam-pin" data-beam-node="out-borrow">Received — hand over</span><span class="beam-pin" data-beam-node="out-grade">Confirmed — in a block</span></div></div></div><div class="mt-8 flex flex-wrap gap-x-8 gap-y-3 border-t border-rule pt-5 text-sm text-ink/65"><p>Confirmed means included in a block; Settled means 10 or more confirmations.</p><p>Settled reports network protection; it cannot prevent a miner from mining a conflict.</p></div></div></div></div></section>
 
-			<section id="difference" class="band border-b border-rule py-20 md:py-28"><div class="rail"><div class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-16"><aside><p class="font-mono text-xs uppercase tracking-[0.2em] text-ink/60">04 / Proven on mainnet</p><p class="mt-3 border-t border-rule pt-3 text-xs leading-relaxed text-ink/60">Same wallet. Same amount. Different protection.</p></aside><div><h2 class="max-w-3xl text-3xl leading-tight text-balance md:text-5xl">The same 1,000 sats, paid two ways.</h2><p class="mt-5 max-w-3xl text-sm leading-relaxed text-pretty text-ink/70">On 21 November 2026, Cashonize paid the demo merchant once through WizardConnect and once with a normal send. Settled checked each payment before it was mined.</p><div class="mt-10 grid gap-6 xl:grid-cols-2"><article class="border border-rule bg-white p-6"><p class="font-mono text-xs uppercase tracking-[0.16em] text-ink/60">WizardConnect · SIGHASH_UTXOS</p><p class="mt-4 text-3xl">Pending <span class="text-base text-ink/60">· score 0</span></p><p class="mt-3 text-sm leading-relaxed text-ink/70">No double-spend proof is possible for this signature type, so wait for confirmation.</p><a class="mt-5 inline-block font-mono text-xs uppercase tracking-[0.12em] text-ink/70 underline" href="https://explorer.salemkode.com/tx/0a9d04cc4fda5aabb8cfd6ccdc1adf64d8dbaa0b78d8cd8ee842c8ff65dedd93" target="_blank" rel="noopener">View transaction →</a></article><article class="border border-rule bg-white p-6"><p class="font-mono text-xs uppercase tracking-[0.16em] text-ink/60">Cashonize normal send · SIGHASH_ALL</p><p class="mt-4 text-3xl">Received <span class="text-base text-ink/60">· score 1</span></p><p class="mt-3 text-sm leading-relaxed text-ink/70">Every input was protectable by double-spend proofs and the independent servers agreed.</p><a class="mt-5 inline-block font-mono text-xs uppercase tracking-[0.12em] text-ink/70 underline" href="https://explorer.salemkode.com/tx/7c3f6432a8e059b7fb874c6e617914cd1da8bfa2da475022194142319832f769" target="_blank" rel="noopener">View transaction →</a></article></div><div class="mt-8 grid gap-4 md:grid-cols-2"><figure class="relative min-h-48 overflow-hidden bg-void"><img src="./embers-1600.webp" alt="Abstract light streaks against a dark background." class="absolute inset-0 h-full w-full object-cover opacity-70" /><div class="absolute inset-0 bg-gradient-to-br from-void/70 to-void/30"></div><figcaption class="absolute inset-x-0 bottom-0 p-6 text-ghost"><span class="font-mono text-xs uppercase tracking-[0.16em] text-ghost/65">Same payment amount</span><span class="mt-2 block text-xl">Different signatures. Different answer.</span></figcaption></figure><article class="border border-rule bg-white p-6"><p class="font-mono text-xs uppercase tracking-[0.16em] text-ink/60">What Settled checks</p><p class="mt-3 text-sm leading-relaxed text-ink/70">A payment’s inputs and unconfirmed ancestry, signature types, existing double-spend proofs, and agreement across independent servers. Every finding is attached to a plain-language reason.</p></article></div><p class="mt-5 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-ink/60">Recorded mainnet proof payments · 21 Nov 2026</p></div></div></div></section>
+			<section id="difference" class="band border-b border-rule py-20 md:py-28"><div class="rail"><div class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-16"><aside><p class="font-mono text-xs uppercase tracking-[0.2em] text-ink/60">04 / Proven on mainnet</p><p class="mt-3 border-t border-rule pt-3 text-xs leading-relaxed text-ink/60">Same wallet. Same amount. Different protection.</p></aside><div><h2 class="max-w-3xl text-3xl leading-tight text-balance md:text-5xl">The same 1,000 sats, paid two ways.</h2><p class="mt-5 max-w-3xl text-sm leading-relaxed text-pretty text-ink/70">On 21 November 2026, Cashonize paid the demo merchant once through WizardConnect and once with a normal send. Settled checked each payment before it was mined.</p><div class="mt-10 grid gap-6 xl:grid-cols-2"><article class="border border-rule bg-white p-6"><p class="font-mono text-xs uppercase tracking-[0.16em] text-ink/60">WizardConnect · SIGHASH_UTXOS</p><p class="mt-4 text-3xl">Pending <span class="text-base text-ink/60">· score 0</span></p><p class="mt-3 text-sm leading-relaxed text-ink/70">No double-spend proof is possible for this signature type, so wait for confirmation.</p><a class="mt-5 inline-block font-mono text-xs uppercase tracking-[0.12em] text-ink/70 underline" href="https://explorer.salemkode.com/tx/0a9d04cc4fda5aabb8cfd6ccdc1adf64d8dbaa0b78d8cd8ee842c8ff65dedd93" target="_blank" rel="noopener">View transaction →</a></article><article class="border border-rule bg-white p-6"><p class="font-mono text-xs uppercase tracking-[0.16em] text-ink/60">Cashonize normal send · SIGHASH_ALL</p><p class="mt-4 text-3xl">Received <span class="text-base text-ink/60">· score 1</span></p><p class="mt-3 text-sm leading-relaxed text-ink/70">Every input was protectable by double-spend proofs and the independent servers agreed.</p><a class="mt-5 inline-block font-mono text-xs uppercase tracking-[0.12em] text-ink/70 underline" href="https://explorer.salemkode.com/tx/7c3f6432a8e059b7fb874c6e617914cd1da8bfa2da475022194142319832f769" target="_blank" rel="noopener">View transaction →</a></article></div><div class="mt-8 grid gap-4 md:grid-cols-2"><figure style="background:#1f4fd8; color:#fff" class="relative flex min-h-48 flex-col justify-end overflow-hidden p-6"><span class="font-mono text-xs uppercase tracking-[0.16em] text-white/70">Same payment amount</span><span class="mt-2 block text-xl">Different signatures. Different answer.</span></figure><article class="border border-rule bg-white p-6"><p class="font-mono text-xs uppercase tracking-[0.16em] text-ink/60">What Settled checks</p><p class="mt-3 text-sm leading-relaxed text-ink/70">A payment’s inputs and unconfirmed ancestry, signature types, existing double-spend proofs, and agreement across independent servers. Every finding is attached to a plain-language reason.</p></article></div><p class="mt-5 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-ink/60">Recorded mainnet proof payments · 21 Nov 2026</p></div></div></div></section>
 
 			<section id="live" class="band border-b border-rule py-20 md:py-28"><div class="rail"><div class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-16"><aside><p class="font-mono text-xs uppercase tracking-[0.2em] text-ink/60">05 / Use Settled</p><p class="mt-3 border-t border-rule pt-3 text-xs leading-relaxed text-ink/60">Check one payment, monitor a merchant, or integrate the engine.</p></aside><div><h2 class="max-w-4xl text-3xl leading-tight text-balance md:text-5xl">One verdict across every surface.</h2><p class="mt-6 max-w-3xl text-base leading-relaxed text-pretty text-ink/70">Start with a transaction ID, try the checkout, watch BCH mainnet, or connect Settled to a wallet or point-of-sale through the API and TypeScript library.</p><a href="../#/check" target="_top" class="live-lead group mt-10 grid gap-6 border border-rule bg-white p-6 transition-colors hover:border-ink/40 hover:bg-ghost md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:p-8"><span><span class="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.18em] text-ink/65"><i class="live-dot" aria-hidden="true"></i>Check a payment</span><span class="mt-4 block max-w-2xl text-xl leading-snug text-balance md:text-2xl">Paste a BCH transaction ID and see what a merchant should do.</span><span class="mt-3 block max-w-2xl text-sm leading-relaxed text-ink/65">Live state, reasons, the unconfirmed ancestor tree, and what each independent server sees.</span></span><span class="inline-flex items-center gap-3 self-start border border-ink/45 px-5 py-3 font-mono text-xs uppercase tracking-[0.14em] transition-colors group-hover:bg-ink group-hover:text-ghost md:self-end">Open Settled <span aria-hidden="true">→</span></span></a><ol class="live-ledger mt-12 border-t border-rule"><li data-reveal><span class="live-ledger__n">1</span><span class="live-ledger__who">Demo checkout</span><p>Pay 1,000 sats on mainnet with a wallet QR or WizardConnect. Compare what the merchant terminal shows.</p><a href="../#/pay" target="_top">Try checkout →</a></li><li data-reveal style="--reveal-at: 70ms"><span class="live-ledger__n">2</span><span class="live-ledger__who">Merchant dashboard</span><p>See every payment to an address and its current settlement state.</p><a href="../#/merchant" target="_top">Open dashboard →</a></li><li data-reveal style="--reveal-at: 140ms"><span class="live-ledger__n">3</span><span class="live-ledger__who">Network monitor</span><p>Follow zero-conf proof coverage, mempool samples, and active double-spend proofs on BCH mainnet.</p><a href="../#/monitor" target="_top">View monitor →</a></li><li data-reveal style="--reveal-at: 210ms"><span class="live-ledger__n">4</span><span class="live-ledger__who">Settlement API</span><p>Query transactions, stream state changes, watch addresses, and subscribe to merchant webhooks.</p><a href="https://settled-api.aexiz.in/v1/monitor" target="_blank" rel="noopener">Open API monitor →</a></li><li data-reveal style="--reveal-at: 280ms"><span class="live-ledger__n">5</span><span class="live-ledger__who">settled-core</span><p>Use the TypeScript engine in wallets and point-of-sale software.</p><a href="https://www.npmjs.com/package/settled-core" target="_blank" rel="noopener">View on npm →</a></li></ol><p class="mt-5 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-ink/60">First implementation of CHIP-2025-11 · BCH BLAZE 2026</p></div></div></div></section>
 
@@ -121,83 +274,8 @@
 			</section>
 		</main>
 
-		<!--
-			Closing visual plate with its pointer-driven image effect. No rule under
-			it: the plate is black and so is the footer below it, so the page's last
-			two bands read as one closing field rather than two stacked dark boxes.
-		-->
-		<section id="texture" class="theme-dark text-ghost">
-			<figure>
-				<!--
-					The canvas magnifier mounts into this box and cover-fits the
-					photo to it (see effects/gridImage.js). The 6:1 frame keeps the
-					image to one third of its former height; cover fitting crops the
-					photo vertically to fill it.
 
-					The <img> both sizes the box and is the fallback — it stays
-					visible until the photo has decoded and the first frame is
-					drawn, and stays for good if the load fails. Vite rewrites
-					src/srcset against `base` but would not rewrite a path in a
-					data attribute, which is the other reason the photo is an
-					element here rather than a URL handed to the script.
-
-					Loading is eager, at low priority: the module decodes on mount,
-					so `lazy` would be overridden anyway and risks a decode that
-					rejects before the fetch has been triggered.
-				-->
-				<!-- 6:1 is a band on a desktop and a 65px letterbox on a phone, which
-				     is too little of the photo to be worth the bytes and too little
-				     room for the mark over it. The crop opens up as the viewport
-				     narrows; cover-fitting means the script needs no notice of it. -->
-				<div
-					data-grid-image
-					class="aspect-[5/2] w-full bg-void md:aspect-[6/1]"
-				>
-					<picture>
-						<source
-							type="image/avif"
-							srcset="./embers-1600.avif 1600w, ./embers-3200.avif 3200w"
-							sizes="100vw"
-						/>
-						<source
-							type="image/webp"
-							srcset="./embers-1600.webp 1600w, ./embers-3200.webp 3200w"
-							sizes="100vw"
-						/>
-						<img
-							src="./embers-2400.jpg"
-							alt="Long-exposure streaks of yellow light against black."
-							width="2400"
-							height="1200"
-							loading="eager"
-							fetchpriority="low"
-							decoding="async"
-						/>
-					</picture>
-
-					<!--
-						The plate's wordmark, over the photo rather than in it. It is a
-						sibling of the canvas with a z-index above it, so the magnifier
-						goes on resolving the photo underneath while the letterforms
-						stay type — and `pointer-events: none` keeps the host, not this,
-						as the element under the cursor, so moving across the word
-						drives the effect exactly as moving across the photo does.
-
-						Inter italic against the hero's Geist Pixel: the two marks are
-						the same word at opposite ends of the page and should not be
-						the same drawing of it. See .plate-mark.
-					-->
-					<p class="plate-mark" aria-hidden="true">settled</p>
-				</div>
-			</figure>
-		</section>
-
-		<!--
-			The closing band, dark like the plate above it, so the page's last two
-			bands read as one closing field rather than as a strip bolted under a
-			dark photo. The hero does the same thing at the other end: the document
-			opens and closes on the void and argues in between.
-		-->
+		<!-- Closing site footer. -->
 		<footer class="theme-dark band bg-void pt-20 pb-10 text-ghost md:pt-24">
 			<div class="rail">
 				<div class="grid gap-12 sm:grid-cols-2 xl:grid-cols-4">
