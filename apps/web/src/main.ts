@@ -37,20 +37,21 @@ const isTxid = (v: string) => /^[0-9a-f]{64}$/i.test(v);
 const isoPt = (gx: number, gy: number, cx: number, cy: number, tw: number, th: number): [number, number] =>
   [cx + (gx - gy) * tw / 2, cy + (gx + gy) * th / 2];
 
-function isoBox(gx: number, gy: number, hgt: number, o: { cx: number; cy: number; tw: number; th: number }, accent: boolean, dot: string): string {
+function isoBox(gx: number, gy: number, hgt: number, o: { cx: number; cy: number; tw: number; th: number }, accent: boolean, dot: string, dark = false): string {
   const p = (dx: number, dy: number, dz: number): [number, number] => { const [x, y] = isoPt(gx + dx, gy + dy, o.cx, o.cy, o.tw, o.th); return [x, y - dz]; };
   const t = [p(-0.5, -0.5, hgt), p(0.5, -0.5, hgt), p(0.5, 0.5, hgt), p(-0.5, 0.5, hgt)];
   const bFront = p(0.5, 0.5, 0), bRight = p(0.5, -0.5, 0), bLeft = p(-0.5, 0.5, 0), c = p(0, 0, hgt);
-  const st = accent ? '#2d33f2' : '#20242b', sw = accent ? 1.6 : 1.1;
+  const st = dark ? '#ffffff' : accent ? '#2d33f2' : '#20242b', sw = accent ? 1.6 : 1.1;
+  const fL = dark ? 'none' : '#ecedf1', fR = dark ? 'none' : '#f5f6f3', fT = dark ? 'none' : '#fff';
   const poly = (pts: [number, number][]) => pts.map((a) => `${a[0].toFixed(1)},${a[1].toFixed(1)}`).join(' ');
-  return `<polygon points="${poly([t[3], t[2], bFront, bLeft])}" fill="#ecedf1" stroke="${st}" stroke-width="${sw}"/>`
-    + `<polygon points="${poly([t[1], t[2], bFront, bRight])}" fill="#f5f6f3" stroke="${st}" stroke-width="${sw}"/>`
-    + `<polygon points="${poly(t)}" fill="#fff" stroke="${st}" stroke-width="${sw}"/>`
-    + `<circle cx="${c[0].toFixed(1)}" cy="${(c[1] + 1).toFixed(1)}" r="4" fill="${dot}"/>`;
+  return `<polygon points="${poly([t[3], t[2], bFront, bLeft])}" fill="${fL}" stroke="${st}" stroke-width="${sw}"/>`
+    + `<polygon points="${poly([t[1], t[2], bFront, bRight])}" fill="${fR}" stroke="${st}" stroke-width="${sw}"/>`
+    + `<polygon points="${poly(t)}" fill="${fT}" stroke="${st}" stroke-width="${sw}"/>`
+    + (dot ? `<circle cx="${c[0].toFixed(1)}" cy="${(c[1] + 1).toFixed(1)}" r="4" fill="${dot}"/>` : '');
 }
 
 /** Isometric settlement-network graphic — a payment and its ancestors on a grid. */
-function isoScene(): string {
+function isoScene(dark = false): string {
   const o = { cx: 360, cy: 150, tw: 150, th: 75 }, N = 4;
   let grid = '';
   for (let i = 0; i <= N; i++) {
@@ -61,9 +62,23 @@ function isoScene(): string {
   const tc = (gx: number, gy: number, hz: number): [number, number] => { const [x, y] = isoPt(gx, gy, o.cx, o.cy, o.tw, o.th); return [x, y - hz]; };
   const c1 = tc(1, 1, 56), c2 = tc(3, 1, 36), c3 = tc(1, 3, 36), c4 = tc(3, 3, 46);
   const line = (a: [number, number], b: [number, number]) => `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"/>`;
-  const conn = `<g stroke="#2d33f2" stroke-width="1.3" stroke-dasharray="3 5" opacity="0.6">${line(c1, c2)}${line(c1, c3)}${line(c1, c4)}</g>`;
-  const boxes = isoBox(1, 1, 56, o, true, '#1f9d63') + isoBox(3, 1, 36, o, false, '#1f9d63') + isoBox(1, 3, 36, o, false, '#c16a2a') + isoBox(3, 3, 46, o, false, '#1f9d63');
-  return `<svg class="iso" viewBox="0 0 720 440" fill="none" aria-hidden="true"><g stroke="#dcdcd6" stroke-width="1">${grid}</g>${conn}${boxes}</svg>`;
+  const conn = `<g stroke="${dark ? '#ffffff' : '#2d33f2'}" stroke-width="1.3" stroke-dasharray="3 5" opacity="0.55">${line(c1, c2)}${line(c1, c3)}${line(c1, c4)}</g>`;
+  const boxes = isoBox(1, 1, 56, o, true, '#1f9d63', dark) + isoBox(3, 1, 36, o, false, '#1f9d63', dark) + isoBox(1, 3, 36, o, false, '#c16a2a', dark) + isoBox(3, 3, 46, o, false, '#1f9d63', dark);
+  return `<svg class="iso" viewBox="0 0 720 440" fill="none" aria-hidden="true"><g stroke="${dark ? 'rgba(255,255,255,0.16)' : '#dcdcd6'}" stroke-width="1">${grid}</g>${conn}${boxes}</svg>`;
+}
+
+/** Small line-art graphics for the bento tiles. */
+function icoCoil(): string {
+  let e = '';
+  for (let i = 0; i < 7; i++) e += `<ellipse cx="60" cy="${30 + i * 10}" rx="33" ry="9"/>`;
+  return `<svg viewBox="0 0 120 120" fill="none" stroke="#20242b" stroke-width="1.4" aria-hidden="true">${e}</svg>`;
+}
+function icoOrbit(): string {
+  return `<svg viewBox="0 0 120 120" fill="none" stroke="#20242b" stroke-width="1.4" aria-hidden="true"><circle cx="60" cy="58" r="23"/><ellipse cx="60" cy="58" rx="52" ry="17" transform="rotate(-23 60 58)"/><circle cx="60" cy="58" r="3" fill="#2d33f2" stroke="none"/></svg>`;
+}
+function icoCubes(): string {
+  const o = { cx: 60, cy: 44, tw: 48, th: 24 };
+  return `<svg viewBox="0 0 120 120" fill="none" aria-hidden="true">${isoBox(0, 0, 20, o, false, '') + isoBox(1, 1, 20, o, true, '') + isoBox(-0.1, 1.1, 20, o, false, '')}</svg>`;
 }
 
 /** Card line-art: a small ancestor graph. */
@@ -162,6 +177,45 @@ function landingPage() {
         <article class="card3"><div class="art">${icoTree()}</div><h3>Walk the history</h3><p>It follows every unconfirmed ancestor the payment depends on — not just the payment itself.</p><a class="more" href="#/about">Read more →</a></article>
         <article class="card3"><div class="art">${icoBurst()}</div><h3>Score every input</h3><p>Each input is graded exactly like a Bitcoin Cash node's getdsproofscore. One weak link pulls the whole payment to pending.</p><a class="more" href="#/about">Read more →</a></article>
         <article class="card3"><div class="art">${icoRings()}</div><h3>A live verdict</h3><p>Pending, Received, Confirmed or Settled — streamed live, with the plain reason behind it.</p><a class="more" href="#/check">Read more →</a></article>
+      </div>
+    </section>
+
+    <section class="block bento-sec" id="surfaces">
+      <div class="sec-head" data-rev>
+        <div><span class="kicker">[ The product ]</span><h2 class="s-head">One check, every surface.</h2></div>
+        <p class="sec-desc">From a single transaction to a whole merchant's traffic — the same honest verdict across the app, the API, and your own point-of-sale.</p>
+      </div>
+      <div class="bento" data-rev-group>
+        <a class="tile tile-tall" href="#/check">
+          <span class="arrow">↗</span>
+          <div class="tile-art">${icoCoil()}</div>
+          <div class="tile-body"><h3>Check a payment</h3><p>Paste a transaction id, get a live verdict with every reason.</p>
+            <div class="pills"><span>Pending</span><span>Received</span><span>Confirmed</span><span>Settled</span></div></div>
+        </a>
+        <a class="tile tile-demo" href="#/pay">
+          <span class="arrow">↗</span>
+          <div class="tile-art">${icoOrbit()}</div>
+          <div class="tile-body"><h3>Demo checkout</h3><p>Pay 1,000 sats on mainnet, two ways.</p></div>
+        </a>
+        <a class="tile tile-monitor" href="#/monitor">
+          <span class="arrow">↗</span>
+          <div class="tile-art">${icoCubes()}</div>
+          <div class="tile-body"><h3>Network monitor</h3><div class="pills"><span>provable</span><span>contract</span><span>utxos-signed</span></div></div>
+        </a>
+        <a class="tile tile-dark tile-wide" href="#/check">
+          <span class="arrow">↗</span>
+          <div class="dark-copy">
+            <h3>Hand the goods over knowing it's settled.</h3>
+            <p>The first implementation of <mark>CHIP-2025-11</mark> — checking a payment the same way a Bitcoin Cash node does.</p>
+            <div class="dark-foot"><span class="cmd">npm i <b>settled-core</b></span></div>
+          </div>
+          <div class="dark-art">${isoScene(true)}</div>
+        </a>
+        <a class="tile tile-merchant" href="#/merchant">
+          <span class="arrow">↗</span>
+          <div class="tile-art">${icoRings()}</div>
+          <div class="tile-body"><h3>Merchant dashboard</h3><p>Every payment to an address, with its live state.</p></div>
+        </a>
       </div>
     </section>
 
